@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório Interativo de Estatística</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabeçalho + abas; cada aba tem gráfico interativo à esquerda e definições à direita */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --ink:#16202e; --muted:#5b6778; --line:#d9dfe8;
+  --accent:#0f766e; --accent-soft:#d6f0ec; --warm:#c2410c; --warm-soft:#fde8dc; --violet:#6d28d9; --violet-soft:#ece5fb;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e141b; --surface:#151d27; --ink:#e6ecf3; --muted:#9aa7b7; --line:#263241;
+    --accent:#2dd4bf; --accent-soft:#12302f; --warm:#fb923c; --warm-soft:#3a2415; --violet:#a78bfa; --violet-soft:#26203d;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e141b; --surface:#151d27; --ink:#e6ecf3; --muted:#9aa7b7; --line:#263241;
+  --accent:#2dd4bf; --accent-soft:#12302f; --warm:#fb923c; --warm-soft:#3a2415; --violet:#a78bfa; --violet-soft:#26203d;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 48px}
+header{padding:28px 0 8px}
+header h1{font-family:var(--display);font-size:clamp(26px,4vw,38px);margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:68ch}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 16px}
+nav button{font:600 15px var(--body);padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav button[aria-selected="true"]{color:#04201d}}
+:root[data-theme="dark"] nav button[aria-selected="true"]{color:#04201d}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.panel{display:none}.panel.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font-family:var(--display);font-size:20px;margin:0 0 4px}
+.card h3{font-family:var(--display);font-size:16px;margin:16px 0 6px}
+.sub{color:var(--muted);margin:0 0 12px;font-size:15px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:end;margin-bottom:10px}
+.controls label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600;min-width:150px;flex:1 1 150px}
+.controls label span.v{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn{font:600 14px var(--body);padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.warm{border-color:var(--warm);color:var(--warm)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+svg.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+svg text{font-family:var(--body);fill:var(--muted);font-size:11.5px}
+svg text.lab{font-weight:700;font-size:12px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tile b{display:block;font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile small{color:var(--muted);font-size:12.5px}
+.tile.a{background:var(--accent-soft)}.tile.w{background:var(--warm-soft)}.tile.v{background:var(--violet-soft)}
+.insight{margin:12px 0 0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;font-size:15px}
+.def{border-top:1px solid var(--line);padding:10px 0}
+.def:first-of-type{border-top:0;padding-top:0}
+.def b{font-family:var(--display)}
+.def p{margin:2px 0 0;font-size:15px}
+.f{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;background:var(--bg);padding:2px 6px;border-radius:5px;white-space:nowrap}
+.prac{margin-top:16px}
+.prac ul{margin:6px 0 0;padding-left:20px}
+details{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface)}
+summary{cursor:pointer;font-weight:700}
+.chip{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--violet-soft);color:var(--violet);font-weight:700;font-size:14px}
+table.st{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums;margin-top:8px}
+table.st th,table.st td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:right}
+table.st th:first-child,table.st td:first-child{text-align:left}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.blocknote{margin:0 0 14px;font-size:14.5px;color:var(--muted)}
+.blocknote b{color:var(--ink)}
+.quiz{margin-top:16px}
+.res{border:2px solid var(--accent);border-radius:12px;padding:14px 16px;margin-top:12px;background:var(--accent-soft)}
+.res h3{margin:0 0 6px;font-size:22px}
+.qq{font-size:17px;font-weight:600;margin:8px 0 4px}
+.qopt{display:block;width:100%;text-align:left;margin:8px 0 0;padding:10px 14px;font-weight:400;font-size:15.5px}
+.qopt:disabled{cursor:default;color:var(--ink)}
+.qopt.ok{border-color:var(--accent);background:var(--accent-soft)}
+.qopt.bad{border-color:var(--warm);background:var(--warm-soft)}
+.insight.wrong{border-left-color:var(--warm);background:var(--warm-soft)}
+.qf .btn{margin-top:10px}
+.cell small{display:block;color:var(--muted);font-size:12.5px}
+.cell.hot{font-weight:700}
+footer{margin-top:24px;color:var(--muted);font-size:13.5px}
+@media (prefers-reduced-motion: no-preference){.panel.on{animation:in .25s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Laboratório Interativo de Estatística</h1>
+  <p>Mexa nos dados e veja as medidas mudarem. Cada módulo traz as definições, as fórmulas e exemplos da prática psicológica: avaliação, psicometria e pesquisa.</p>
+</header>
+<nav role="tablist" aria-label="Módulos">
+  <button role="tab" id="t-ct" aria-selected="true" data-p="ct">1. Tendência central</button>
+  <button role="tab" id="t-ds" aria-selected="false" data-p="ds">2. Dispersão</button>
+  <button role="tab" id="t-fm" aria-selected="false" data-p="fm">3. Forma da distribuição</button>
+  <button role="tab" id="t-nc" aria-selected="false" data-p="nc">4. Curva normal</button>
+  <button role="tab" id="t-co" aria-selected="false" data-p="co">5. Correlação</button>
+  <button role="tab" id="t-rg" aria-selected="false" data-p="rg">6. Regressão linear</button>
+  <button role="tab" id="t-cm" aria-selected="false" data-p="cm">7. Comparação de médias</button>
+  <button role="tab" id="t-an" aria-selected="false" data-p="an">8. ANOVA</button>
+  <button role="tab" id="t-x2" aria-selected="false" data-p="x2">9. Qui-quadrado</button>
+  <button role="tab" id="t-dm" aria-selected="false" data-p="dm">10. Qual teste usar?</button>
+</nav>
+<p class="blocknote" id="bn" aria-live="polite"></p>
+
+<!-- 1. TENDÊNCIA CENTRAL -->
+<section class="panel on" id="p-ct" role="tabpanel" aria-labelledby="t-ct">
+ <div class="grid">
+  <div class="card">
+   <h2>Média, mediana e moda</h2>
+   <p class="sub">Clique na reta para adicionar um valor. Clique em um ponto para removê-lo.</p>
+   <div class="controls">
+     <label for="ct-preset">Exemplo
+       <select id="ct-preset">
+         <option value="bdi">Sintomas depressivos (BDI-II)</option>
+         <option value="rt">Tempo de reação no Stroop (ms)</option>
+         <option value="ses">Sessões de psicoterapia até a alta</option>
+       </select></label>
+   </div>
+   <div class="row">
+     <button class="btn warm" id="ct-out">Adicionar valor extremo</button>
+     <button class="btn" id="ct-undo">Remover último</button>
+     <button class="btn" id="ct-reset">Restaurar exemplo</button>
+   </div>
+   <svg class="chart" id="ct-svg" viewBox="0 0 720 300" role="img" aria-label="Gráfico de pontos com média, mediana e moda"></svg>
+   <div class="tiles" id="ct-tiles"></div>
+   <p class="insight" id="ct-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Média aritmética</b><p>Soma dos valores dividida pelo número de observações. Usa todos os dados, por isso é sensível a valores extremos. <span class="f">x̄ = Σxᵢ / n</span></p></div>
+   <div class="def"><b>Mediana</b><p>Valor que divide a distribuição ordenada ao meio: 50% dos casos ficam abaixo e 50% acima. Com n par, é a média dos dois valores centrais. Resiste a outliers.</p></div>
+   <div class="def"><b>Moda</b><p>Valor mais frequente. Pode não existir (amodal) ou haver mais de uma (bimodal, multimodal). É a única medida possível para variáveis nominais.</p></div>
+   <div class="def"><b>Qual escolher?</b><p>Distribuição simétrica: média. Assimétrica ou com outliers: mediana. Categorias: moda.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Escores de escalas clínicas</b> costumam ter cauda longa à direita (poucos casos graves). A mediana descreve o "paciente típico" melhor que a média.</li>
+   <li><b>Tempos de reação</b> têm assimetria positiva por natureza. Pesquisas em neuropsicologia usam a mediana ou transformam os dados.</li>
+   <li><b>Diagnóstico mais frequente</b> em um serviço de saúde mental é uma moda: não faz sentido calcular média de categorias.</li>
+  </ul></div>
+ <details><summary>Pense: o que acontece com a média ao adicionar um valor extremo?</summary>
+  <p>Ela se desloca em direção ao valor extremo, enquanto a mediana quase não se move. Teste com o botão acima e compare as duas medidas.</p></details>
+</section>
+
+<!-- 2. DISPERSÃO -->
+<section class="panel" id="p-ds" role="tabpanel" aria-labelledby="t-ds">
+ <div class="grid">
+  <div class="card">
+   <h2>Dois grupos, mesma média, dispersões diferentes</h2>
+   <p class="sub">Escore de ansiedade (0 a 100) em dois grupos de 60 pessoas. Ajuste média e desvio padrão de cada grupo.</p>
+   <div class="controls">
+     <label for="ds-ma">Média do grupo A <span class="v" id="ds-ma-v"></span><input type="range" id="ds-ma" min="20" max="80" step="1" value="50"></label>
+     <label for="ds-mb">Média do grupo B <span class="v" id="ds-mb-v"></span><input type="range" id="ds-mb" min="20" max="80" step="1" value="50"></label>
+     <label for="ds-sa">DP do grupo A <span class="v" id="ds-sa-v"></span><input type="range" id="ds-sa" min="2" max="25" step="0.5" value="6"></label>
+     <label for="ds-sb">DP do grupo B <span class="v" id="ds-sb-v"></span><input type="range" id="ds-sb" min="2" max="25" step="0.5" value="16"></label>
+   </div>
+   <div class="row">
+     <button class="btn" id="ds-p1">Mesma média, DP diferente</button>
+     <button class="btn" id="ds-p2">Mesmo DP, médias diferentes</button>
+   </div>
+   <svg class="chart" id="ds-svg" viewBox="0 0 720 300" role="img" aria-label="Histogramas e boxplots de dois grupos"></svg>
+   <div style="overflow-x:auto"><table class="st" id="ds-tab"></table></div>
+   <p class="insight" id="ds-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Amplitude</b><p>Diferença entre o maior e o menor valor. Simples, mas depende só de dois casos. <span class="f">A = máx − mín</span></p></div>
+   <div class="def"><b>Variância</b><p>Média dos quadrados dos desvios em relação à média. Em amostras, divide-se por n − 1. <span class="f">s² = Σ(xᵢ − x̄)² / (n − 1)</span></p></div>
+   <div class="def"><b>Desvio padrão</b><p>Raiz da variância. Está na mesma unidade da variável, o que facilita a interpretação. <span class="f">s = √s²</span></p></div>
+   <div class="def"><b>Coeficiente de variação</b><p>Desvio padrão relativo à média, em %. Permite comparar dispersão entre escalas diferentes. <span class="f">CV = s / x̄ × 100</span></p></div>
+   <div class="def"><b>Quartis e intervalo interquartil</b><p>Q1 e Q3 delimitam os 50% centrais dos dados. O boxplot mostra Q1, mediana e Q3. <span class="f">IIQ = Q3 − Q1</span></p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Dois grupos com a mesma média pós-intervenção</b> podem esconder realidades distintas. Um grupo homogêneo responde de forma parecida; outro mistura quem melhorou muito e quem não melhorou.</li>
+   <li><b>Testes padronizados</b> são construídos com DP conhecido (QI: 15; escore T: 10). Essa dispersão é o que permite transformar um escore bruto em posição relativa.</li>
+   <li><b>Comparar escalas</b> com unidades distintas (por exemplo, BDI-II e DASS-21) exige medidas relativas como o CV ou o escore z.</li>
+  </ul></div>
+ <details><summary>Pense: duas intervenções têm a mesma média de melhora. Qual escolher?</summary>
+  <p>Se a média é igual, olhe a dispersão. Uma intervenção com DP menor entrega um resultado mais previsível para cada paciente. Uma com DP maior pode funcionar muito bem para alguns e nada para outros, o que sugere investigar moderadores.</p></details>
+</section>
+
+<!-- 3. FORMA -->
+<section class="panel" id="p-fm" role="tabpanel" aria-labelledby="t-fm">
+ <div class="grid">
+  <div class="card">
+   <h2>Assimetria e curtose</h2>
+   <p class="sub">Escore padronizado com média 50 e DP 10 (n = 400). A curva tracejada é a normal de referência.</p>
+   <div class="controls">
+     <label for="fm-sk">Assimetria (forma da cauda) <span class="v" id="fm-sk-v"></span><input type="range" id="fm-sk" min="-1.2" max="1.2" step="0.05" value="0"></label>
+     <label for="fm-ku">Curtose (peso das caudas) <span class="v" id="fm-ku-v"></span><input type="range" id="fm-ku" min="0.6" max="1.6" step="0.05" value="1"></label>
+   </div>
+   <div class="row">
+     <button class="btn" id="fm-p0">Simétrica</button>
+     <button class="btn" id="fm-p1">Cauda à direita</button>
+     <button class="btn" id="fm-p2">Cauda à esquerda</button>
+     <button class="btn" id="fm-p3">Leptocúrtica</button>
+     <button class="btn" id="fm-p4">Platicúrtica</button>
+   </div>
+   <svg class="chart" id="fm-svg" viewBox="0 0 720 280" role="img" aria-label="Histograma com curva normal de referência"></svg>
+   <div class="tiles" id="fm-tiles"></div>
+   <p class="insight" id="fm-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Assimetria (g₁)</b><p>Grau de afastamento da simetria. <b>Positiva</b>: cauda longa à direita, média &gt; mediana. <b>Negativa</b>: cauda longa à esquerda, média &lt; mediana. <span class="f">g₁ = m₃ / m₂^1,5</span></p></div>
+   <div class="def"><b>Curtose (g₂)</b><p>Peso das caudas em relação à normal. Aqui usamos a curtose em excesso, em que a normal vale 0. <span class="f">g₂ = m₄ / m₂² − 3</span></p></div>
+   <div class="def"><b>Terminologia</b><p><b>Leptocúrtica</b> (g₂ &gt; 0): pico alto e caudas pesadas. <b>Mesocúrtica</b> (g₂ ≈ 0): como a normal. <b>Platicúrtica</b> (g₂ &lt; 0): achatada.</p></div>
+   <div class="def"><b>Regra prática</b><p>Valores de |g₁| e |g₂| abaixo de 1 são geralmente toleráveis para análises paramétricas. Acima de 2, avalie transformações ou testes não paramétricos.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Escalas de sintomas em amostra comunitária</b> (BDI-II, DASS-21) têm assimetria positiva: a maioria pontua baixo e poucos pontuam alto (efeito chão).</li>
+   <li><b>Testes fáceis para a população-alvo</b> geram assimetria negativa, com acúmulo de escores altos (efeito teto), o que reduz a capacidade de discriminar quem vai bem.</li>
+   <li><b>Pressupostos de testes paramétricos</b> e de modelos como AFC e regressão dependem da forma da distribuição. Verifique g₁ e g₂ antes da análise.</li>
+  </ul></div>
+ <details><summary>Pense: em uma distribuição com assimetria positiva, quem fica maior, média ou mediana?</summary>
+  <p>A média, porque é puxada pela cauda longa à direita. Veja as duas linhas no gráfico afastando-se quando você aumenta a assimetria.</p></details>
+</section>
+
+<!-- 4. CURVA NORMAL -->
+<section class="panel" id="p-nc" role="tabpanel" aria-labelledby="t-nc">
+ <div class="grid">
+  <div class="card">
+   <h2>Curva normal, escore z e percentil</h2>
+   <p class="sub">Escolha uma escala, defina a região e leia a proporção de pessoas nessa faixa.</p>
+   <div class="controls">
+     <label for="nc-preset">Escala
+       <select id="nc-preset">
+         <option value="iq">QI Wechsler (M = 100, DP = 15)</option>
+         <option value="t">Escore T (M = 50, DP = 10)</option>
+         <option value="z">Escore z (M = 0, DP = 1)</option>
+         <option value="sc">Escore ponderado de subteste (M = 10, DP = 3)</option>
+       </select></label>
+     <label for="nc-mode">Região
+       <select id="nc-mode">
+         <option value="below">Abaixo de um valor</option>
+         <option value="above">Acima de um valor</option>
+         <option value="between">Entre dois valores</option>
+       </select></label>
+   </div>
+   <div class="controls">
+     <label for="nc-a"><span id="nc-al">Valor</span> <span class="v" id="nc-a-v"></span><input type="range" id="nc-a" min="0" max="1" step="0.01" value="0.5"></label>
+     <label for="nc-b" id="nc-bw"><span>Valor superior</span> <span class="v" id="nc-b-v"></span><input type="range" id="nc-b" min="0" max="1" step="0.01" value="0.5"></label>
+   </div>
+   <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-bottom:6px"><input type="checkbox" id="nc-rule"> Mostrar a regra empírica 68 – 95 – 99,7</label>
+   <svg class="chart" id="nc-svg" viewBox="0 0 720 280" role="img" aria-label="Curva normal com região sombreada"></svg>
+   <div class="tiles" id="nc-tiles"></div>
+   <p class="insight" id="nc-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Distribuição normal</b><p>Curva simétrica em forma de sino, definida por média (μ) e desvio padrão (σ). Média, mediana e moda coincidem.</p></div>
+   <div class="def"><b>Escore z</b><p>Distância de um valor à média, em desvios padrão. <span class="f">z = (x − μ) / σ</span></p></div>
+   <div class="def"><b>Percentil</b><p>Porcentagem de casos que ficam abaixo de um valor. O percentil 84 significa que 84% da população pontua menos.</p></div>
+   <div class="def"><b>Regra empírica</b><p>Cerca de 68% dos casos ficam em μ ± 1σ, 95% em μ ± 2σ e 99,7% em μ ± 3σ.</p></div>
+   <div class="def"><b>Escores padronizados</b><p>Escalas psicológicas redefinem μ e σ para facilitar a comunicação. Todas convertem para o mesmo z.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Laudo neuropsicológico:</b> um desempenho em z = −2 (QI 70) está 2 DP abaixo da média e supera apenas cerca de 2% da população normativa.</li>
+   <li><b>Comparação entre testes:</b> converter escores brutos em z ou T permite comparar memória, atenção e linguagem na mesma régua.</li>
+   <li><b>Pontos de corte:</b> critérios como "−1,5 DP" ou "percentil 5" vêm diretamente da área sob a curva.</li>
+  </ul></div>
+ <details><summary>Pense: qual a porcentagem de pessoas com QI entre 85 e 115?</summary>
+  <p>Esses valores são μ ± 1σ, então cerca de 68%. Escolha "Entre dois valores" e confira.</p></details>
+</section>
+
+<!-- 5. CORRELAÇÃO -->
+<section class="panel" id="p-co" role="tabpanel" aria-labelledby="t-co">
+ <div class="grid">
+  <div class="card">
+   <h2>Correlação de Pearson</h2>
+   <p class="sub">Cada ponto é uma pessoa. Defina a força da relação e observe a nuvem, a reta e o efeito de um caso atípico.</p>
+   <div class="controls">
+     <label for="co-preset">Exemplo
+       <select id="co-preset">
+         <option value="sono">Horas de sono × atenção sustentada</option>
+         <option value="ans">Ansiedade × depressão</option>
+         <option value="rs">Uso de redes sociais × satisfação corporal</option>
+       </select></label>
+     <label for="co-r">Correlação desejada (r) <span class="v" id="co-r-v"></span><input type="range" id="co-r" min="-1" max="1" step="0.01" value="0.55"></label>
+     <label for="co-n">Tamanho da amostra (n) <span class="v" id="co-n-v"></span><input type="range" id="co-n" min="15" max="200" step="1" value="60"></label>
+   </div>
+   <div class="row">
+     <button class="btn warm" id="co-out">Adicionar caso atípico</button>
+     <button class="btn" id="co-rm">Remover casos atípicos</button>
+     <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="co-line" checked> Mostrar reta de regressão</label>
+   </div>
+   <svg class="chart" id="co-svg" viewBox="0 0 720 340" role="img" aria-label="Diagrama de dispersão"></svg>
+   <div class="tiles" id="co-tiles"></div>
+   <p class="insight" id="co-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Coeficiente de Pearson (r)</b><p>Mede a força e a direção da relação linear entre duas variáveis, de −1 a +1. <span class="f">r = Σ(zₓ · z_y) / (n − 1)</span></p></div>
+   <div class="def"><b>Interpretação (Cohen)</b><p>|r| ≈ 0,10 pequena; 0,30 moderada; 0,50 grande. O sinal indica se as variáveis sobem juntas (+) ou em sentidos opostos (−).</p></div>
+   <div class="def"><b>Coeficiente de determinação (r²)</b><p>Proporção da variância de uma variável compartilhada com a outra. Com r = 0,50, r² = 25%.</p></div>
+   <div class="def"><b>Spearman (ρ)</b><p>Correlação entre postos (ranks). Mais robusta a outliers e adequada a dados ordinais ou relações monotônicas.</p></div>
+   <div class="def"><b>Cuidados</b><p>Correlação não implica causalidade. Pearson só captura relações lineares e muda com outliers e com restrição de amplitude.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Validade convergente:</b> uma nova escala de depressão deve correlacionar de forma alta com o BDI-II. Essa correlação é uma evidência de validade.</li>
+   <li><b>Fidelidade teste-reteste:</b> é a correlação entre duas aplicações do mesmo instrumento. Valores acima de 0,70 costumam ser esperados.</li>
+   <li><b>Comorbidade:</b> ansiedade e depressão se correlacionam de forma moderada a alta, mas isso não diz qual causa a outra.</li>
+  </ul></div>
+ <details><summary>Pense: um único caso atípico pode mudar r? Compare Pearson e Spearman.</summary>
+  <p>Pode, principalmente com amostras pequenas. Adicione o caso atípico com n = 15 e veja r cair, enquanto ρ de Spearman muda bem menos, porque usa apenas os postos.</p></details>
+</section>
+
+<!-- 6. COMPARAÇÃO DE MÉDIAS -->
+<section class="panel" id="p-cm" role="tabpanel" aria-labelledby="t-cm">
+ <div class="grid">
+  <div class="card">
+   <h2>Teste t para dois grupos independentes</h2>
+   <p class="sub">Ensaio fictício: bem-estar (0 a 100) em um grupo lista de espera e um grupo com intervenção. Defina a população e sorteie amostras para ver a variação do acaso.</p>
+   <div class="controls">
+     <label for="cm-ma">Média real, lista de espera <span class="v" id="cm-ma-v"></span><input type="range" id="cm-ma" min="30" max="70" step="1" value="50"></label>
+     <label for="cm-mb">Média real, intervenção <span class="v" id="cm-mb-v"></span><input type="range" id="cm-mb" min="30" max="80" step="1" value="58"></label>
+     <label for="cm-s">Desvio padrão <span class="v" id="cm-s-v"></span><input type="range" id="cm-s" min="5" max="25" step="0.5" value="12"></label>
+     <label for="cm-n">n por grupo <span class="v" id="cm-n-v"></span><input type="range" id="cm-n" min="8" max="300" step="1" value="30"></label>
+   </div>
+   <div class="row">
+     <button class="btn warm" id="cm-new">Sortear nova amostra</button>
+     <button class="btn" id="cm-p0">Sem efeito real</button>
+     <button class="btn" id="cm-p1">Efeito pequeno, n grande</button>
+     <button class="btn" id="cm-p2">Efeito grande, n pequeno</button>
+   </div>
+   <svg class="chart" id="cm-svg" viewBox="0 0 720 340" role="img" aria-label="Pontos dos dois grupos com intervalos de confiança e curva t com região de rejeição"></svg>
+   <div class="tiles" id="cm-tiles"></div>
+   <p class="insight" id="cm-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Hipótese nula (H₀)</b><p>Afirma que as médias populacionais são iguais (μ₁ = μ₂). O teste avalia se os dados são compatíveis com ela.</p></div>
+   <div class="def"><b>Estatística t (Welch)</b><p>Diferença das médias dividida pelo erro padrão da diferença. Não exige variâncias iguais. <span class="f">t = (x̄₂ − x̄₁) / √(s₁²/n₁ + s₂²/n₂)</span></p></div>
+   <div class="def"><b>Valor p</b><p>Probabilidade de obter uma diferença tão extrema quanto a observada, ou mais, se H₀ fosse verdadeira. Não é a probabilidade de H₀ ser verdadeira.</p></div>
+   <div class="def"><b>Nível de significância (α)</b><p>Limite definido antes da análise, em geral 0,05. Se p &lt; α, rejeita-se H₀. As caudas sombreadas na curva somam α.</p></div>
+   <div class="def"><b>d de Cohen</b><p>Diferença em unidades de desvio padrão. 0,2 pequeno; 0,5 médio; 0,8 grande. <span class="f">d = (x̄₂ − x̄₁) / s_p</span></p></div>
+   <div class="def"><b>Intervalo de confiança</b><p>Faixa de valores plausíveis para a diferença real. Se o IC 95% não inclui 0, p &lt; 0,05.</p></div>
+   <div class="def"><b>Outros testes</b><p><b>t pareado</b>: mesmas pessoas antes e depois. <b>ANOVA</b>: três ou mais grupos. <b>Mann-Whitney</b>: alternativa para dados ordinais ou muito assimétricos.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Ensaio clínico</b> com grupo intervenção e grupo lista de espera: compara-se a média pós-tratamento (ou a mudança) nos dois grupos.</li>
+   <li><b>Diferenças entre grupos clínicos e controles</b> em testes neuropsicológicos, como atenção ou funções executivas.</li>
+   <li><b>Significância não é relevância clínica.</b> Com n grande, diferenças minúsculas dão p &lt; 0,05. Relate sempre o d e o IC, e discuta a diferença mínima clinicamente importante.</li>
+  </ul></div>
+ <details><summary>Pense: por que o p muda quando você sorteia outra amostra com a mesma população?</summary>
+  <p>Cada amostra é um recorte aleatório. A diferença observada flutua em torno da diferença real, e o p flutua junto. Por isso um único estudo raramente é conclusivo. Teste "Efeito pequeno, n grande" e depois "Efeito grande, n pequeno" para ver como n e tamanho do efeito se combinam.</p></details>
+</section>
+
+<!-- 7. REGRESSÃO -->
+<section class="panel" id="p-rg" role="tabpanel" aria-labelledby="t-rg">
+ <div class="grid">
+  <div class="card">
+   <h2>Regressão linear simples</h2>
+   <p class="sub">Ajuste a reta à mão e compare com a de mínimos quadrados. Clique no gráfico para adicionar um ponto, ou em um ponto para removê-lo.</p>
+   <div class="controls">
+     <label for="rg-preset">Exemplo
+       <select id="rg-preset">
+         <option value="ter">Sessões de terapia → redução no BDI-II</option>
+         <option value="age">Idade → tempo de reação</option>
+         <option value="sono">Horas de sono → atenção</option>
+       </select></label>
+     <label for="rg-lv">Altura da reta no ponto médio <span class="v" id="rg-lv-v"></span><input type="range" id="rg-lv" min="0" max="1" step="0.01" value="0"></label>
+     <label for="rg-sl">Inclinação (b₁) <span class="v" id="rg-sl-v"></span><input type="range" id="rg-sl" min="-1" max="1" step="0.01" value="0"></label>
+     <label for="rg-x0">Prever para x = <span class="v" id="rg-x0-v"></span><input type="range" id="rg-x0" min="0" max="1" step="0.01" value="0"></label>
+   </div>
+   <div class="row">
+     <button class="btn" id="rg-flat">Zerar a minha reta</button>
+     <button class="btn" id="rg-fit">Ajustar à reta ideal</button>
+     <button class="btn" id="rg-reset">Restaurar dados</button>
+     <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="rg-res" checked> Resíduos</label>
+     <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="rg-ols"> Reta de mínimos quadrados</label>
+   </div>
+   <svg class="chart" id="rg-svg" viewBox="0 0 720 340" role="img" aria-label="Diagrama de dispersão com reta de regressão e resíduos"></svg>
+   <div class="tiles" id="rg-tiles"></div>
+   <p class="insight" id="rg-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Reta de regressão</b><p>Modelo que prevê Y a partir de X. <span class="f">ŷ = b₀ + b₁x</span></p></div>
+   <div class="def"><b>Inclinação (b₁) e intercepto (b₀)</b><p>b₁ é a mudança prevista em Y para cada unidade de X. b₀ é o valor previsto quando x = 0, que pode não ter sentido prático. <span class="f">b₁ = r · s_y / s_x</span></p></div>
+   <div class="def"><b>Resíduo</b><p>Erro de previsão de cada pessoa: valor observado menos previsto. <span class="f">e = y − ŷ</span></p></div>
+   <div class="def"><b>Mínimos quadrados</b><p>Método que escolhe a reta com a menor soma dos quadrados dos resíduos. <span class="f">SSE = Σ(y − ŷ)²</span></p></div>
+   <div class="def"><b>R²</b><p>Proporção da variância de Y explicada por X. <span class="f">R² = 1 − SSE / SST</span></p></div>
+   <div class="def"><b>Teste da inclinação</b><p>Testa H₀: b₁ = 0 com t = b₁ / EP(b₁) e n − 2 graus de liberdade.</p></div>
+   <div class="def"><b>Cuidados</b><p>Evite extrapolar fora da faixa observada. Regressão mostra associação, não causa. Existe ainda a <b>regressão à média</b>: quem pontua extremo tende a pontuar menos extremo na reavaliação.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Prever desfechos:</b> estimar a redução de sintomas esperada conforme o número de sessões de uma intervenção.</li>
+   <li><b>Normas por idade:</b> o tempo de reação aumenta com a idade. A regressão gera escores ajustados por idade em avaliação neuropsicológica.</li>
+   <li><b>Regressão à média:</b> pacientes recrutados por escore muito alto tendem a melhorar um pouco mesmo sem tratamento. Por isso se usa grupo controle.</li>
+  </ul></div>
+ <details><summary>Pense: por que a soma dos quadrados dos resíduos nunca fica abaixo do valor da reta ideal?</summary>
+  <p>Porque a reta de mínimos quadrados é, por definição, a que minimiza esse valor. Qualquer outra reta, por mais próxima que pareça, tem SSE igual ou maior. Tente achar uma reta melhor com os dois controles.</p></details>
+</section>
+
+<!-- 8. ANOVA -->
+<section class="panel" id="p-an" role="tabpanel" aria-labelledby="t-an">
+ <div class="grid">
+  <div class="card">
+   <h2>ANOVA de um fator</h2>
+   <p class="sub">Ansiedade (0 a 100) após três condições: TCC, mindfulness e lista de espera. Defina as médias reais e veja como a variância entre grupos se compara à variância dentro dos grupos.</p>
+   <div class="controls">
+     <label for="an-m0">Média real, TCC <span class="v" id="an-m0-v"></span><input type="range" id="an-m0" min="30" max="70" step="1" value="42"></label>
+     <label for="an-m1">Média real, mindfulness <span class="v" id="an-m1-v"></span><input type="range" id="an-m1" min="30" max="70" step="1" value="45"></label>
+     <label for="an-m2">Média real, lista de espera <span class="v" id="an-m2-v"></span><input type="range" id="an-m2" min="30" max="70" step="1" value="54"></label>
+     <label for="an-s">Desvio padrão <span class="v" id="an-s-v"></span><input type="range" id="an-s" min="5" max="25" step="0.5" value="12"></label>
+     <label for="an-n">n por grupo <span class="v" id="an-n-v"></span><input type="range" id="an-n" min="5" max="100" step="1" value="25"></label>
+   </div>
+   <div class="row">
+     <button class="btn warm" id="an-new">Sortear nova amostra</button>
+     <button class="btn" id="an-p0">Sem diferença real</button>
+     <button class="btn" id="an-p1">Só um grupo difere</button>
+     <button class="btn" id="an-p2">Diferenças grandes</button>
+   </div>
+   <svg class="chart" id="an-svg" viewBox="0 0 720 430" role="img" aria-label="Três grupos com média geral e curva F"></svg>
+   <div class="tiles" id="an-tiles"></div>
+   <div style="overflow-x:auto"><table class="st" id="an-tab"></table></div>
+   <div style="overflow-x:auto"><table class="st" id="an-ph"></table></div>
+   <p class="insight" id="an-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Ideia central</b><p>A ANOVA compara a variação entre as médias dos grupos com a variação dos indivíduos dentro de cada grupo. Se as médias estão mais afastadas do que o acaso explicaria, F fica grande.</p></div>
+   <div class="def"><b>Soma de quadrados</b><p><b>Entre</b> (SQE): quanto as médias dos grupos se afastam da média geral. <b>Dentro</b> (SQD): variação residual dentro dos grupos. <span class="f">SQT = SQE + SQD</span></p></div>
+   <div class="def"><b>Quadrados médios e F</b><p>Cada soma dividida pelos seus graus de liberdade. <span class="f">F = QME / QMD</span> com gl = k − 1 e N − k.</p></div>
+   <div class="def"><b>η² (eta ao quadrado)</b><p>Proporção da variância total explicada pelo fator. <span class="f">η² = SQE / SQT</span>. Referência: 0,01 pequeno, 0,06 médio, 0,14 grande.</p></div>
+   <div class="def"><b>Por que não vários testes t?</b><p>Com três grupos são três comparações. Cada uma com α = 0,05 eleva o risco de ao menos um falso positivo para cerca de 14%.</p></div>
+   <div class="def"><b>Post hoc</b><p>Se o F é significativo, comparações par a par (Bonferroni, Tukey) indicam quais grupos diferem. Aqui usamos Bonferroni: p multiplicado pelo número de pares.</p></div>
+   <div class="def"><b>Pressupostos</b><p>Observações independentes, resíduos aproximadamente normais e variâncias semelhantes entre grupos (teste de Levene). Para medidas repetidas, use ANOVA de medidas repetidas.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Ensaios com três ou mais braços:</b> duas intervenções ativas e um controle. A ANOVA é o primeiro passo antes de comparar pares.</li>
+   <li><b>Grupos diagnósticos:</b> comparar desempenho em um teste entre pacientes com TDAH, TEA e controles.</li>
+   <li><b>Relatar:</b> F(gl₁, gl₂) = valor, p, η² e as comparações post hoc com seus tamanhos de efeito.</li>
+  </ul></div>
+ <details><summary>Pense: a ANOVA deu significativa. Isso diz que todos os grupos diferem entre si?</summary>
+  <p>Não. Diz que pelo menos um par difere. Teste "Só um grupo difere": o F fica significativo, mas o post hoc mostra que só os pares com o grupo diferente se separam.</p></details>
+</section>
+
+<!-- 9. QUI-QUADRADO -->
+<section class="panel" id="p-x2" role="tabpanel" aria-labelledby="t-x2">
+ <div class="grid">
+  <div class="card">
+   <h2>Qui-quadrado de independência</h2>
+   <p class="sub">Variáveis categóricas: grupo de tratamento × resposta clínica (respondeu ou não). Defina a taxa de resposta de cada grupo e veja se a diferença de proporções é maior do que o acaso.</p>
+   <div class="controls">
+     <label for="x2-g">Número de grupos
+       <select id="x2-g"><option value="2">2 grupos (tabela 2 × 2)</option><option value="3">3 grupos (tabela 2 × 3)</option></select></label>
+     <label for="x2-n">n por grupo <span class="v" id="x2-n-v"></span><input type="range" id="x2-n" min="8" max="300" step="1" value="50"></label>
+   </div>
+   <div class="controls">
+     <label for="x2-r0"><span id="x2-l0">TCC</span>: % que respondeu <span class="v" id="x2-r0-v"></span><input type="range" id="x2-r0" min="0" max="100" step="1" value="64"></label>
+     <label for="x2-r1"><span id="x2-l1">Lista de espera</span>: % que respondeu <span class="v" id="x2-r1-v"></span><input type="range" id="x2-r1" min="0" max="100" step="1" value="40"></label>
+     <label for="x2-r2" id="x2-w2"><span id="x2-l2">Lista de espera</span>: % que respondeu <span class="v" id="x2-r2-v"></span><input type="range" id="x2-r2" min="0" max="100" step="1" value="40"></label>
+   </div>
+   <div class="row">
+     <button class="btn" id="x2-p0">Sem associação</button>
+     <button class="btn" id="x2-p1">Associação moderada</button>
+     <button class="btn" id="x2-p2">Amostra muito pequena</button>
+   </div>
+   <svg class="chart" id="x2-svg" viewBox="0 0 720 420" role="img" aria-label="Proporção de resposta por grupo e curva qui-quadrado"></svg>
+   <div class="tiles" id="x2-tiles"></div>
+   <div style="overflow-x:auto"><table class="st" id="x2-tab"></table></div>
+   <p class="insight" id="x2-ins"></p>
+  </div>
+  <aside class="card">
+   <h2>Definições</h2>
+   <div class="def"><b>Frequência observada (O)</b><p>Contagem real de pessoas em cada célula da tabela de contingência.</p></div>
+   <div class="def"><b>Frequência esperada (E)</b><p>Contagem que se esperaria se as variáveis fossem independentes. <span class="f">E = (total da linha × total da coluna) / N</span></p></div>
+   <div class="def"><b>Estatística χ²</b><p>Soma dos desvios entre observado e esperado, padronizados. <span class="f">χ² = Σ (O − E)² / E</span></p></div>
+   <div class="def"><b>Graus de liberdade</b><p><span class="f">gl = (linhas − 1) × (colunas − 1)</span>. Tabela 2 × 2: gl = 1. Tabela 2 × 3: gl = 2.</p></div>
+   <div class="def"><b>Resíduo padronizado</b><p><span class="f">(O − E) / √E</span>. Valores acima de |2| indicam as células que mais contribuem para a associação.</p></div>
+   <div class="def"><b>V de Cramér</b><p>Tamanho de efeito para tabelas de contingência, de 0 a 1. <span class="f">V = √(χ² / N)</span> em tabelas com 2 linhas. 0,1 pequeno, 0,3 médio, 0,5 grande.</p></div>
+   <div class="def"><b>Condições</b><p>Observações independentes e E ≥ 5 na maioria das células. Com E baixo, use o teste exato de Fisher. Para medidas pareadas (antes e depois), use McNemar.</p></div>
+  </aside>
+ </div>
+ <div class="card prac"><h2>Na prática psicológica</h2>
+  <ul>
+   <li><b>Resposta clínica:</b> comparar a proporção de respondedores entre intervenção e controle, quando o desfecho é dicotômico (por exemplo, queda de 50% nos sintomas).</li>
+   <li><b>Prevalência:</b> verificar se um diagnóstico se distribui de forma diferente entre sexos, faixas etárias ou serviços.</li>
+   <li><b>Pontos de corte:</b> ao categorizar um escore (acima ou abaixo do corte), o qui-quadrado compara grupos, mas perde informação em relação à análise do escore contínuo.</li>
+  </ul></div>
+ <details><summary>Pense: por que o qui-quadrado não diz qual grupo difere?</summary>
+  <p>Porque testa a tabela inteira. Com 3 grupos, olhe os resíduos padronizados: a célula com maior |resíduo| indica onde a associação se concentra. Teste a tabela 2 × 3 com um grupo diferente dos outros.</p></details>
+</section>
+
+<!-- 10. MAPA DE DECISÃO -->
+<section class="panel" id="p-dm" role="tabpanel" aria-labelledby="t-dm">
+ <div class="grid">
+  <div class="card">
+   <h2>Qual teste usar?</h2>
+   <p class="sub">Responda sobre o seu estudo e veja o teste indicado, a justificativa e as condições de uso.</p>
+   <div class="controls">
+     <label for="dm-goal">Objetivo
+       <select id="dm-goal"><option value="cmp">Comparar grupos ou momentos</option><option value="rel">Relacionar duas variáveis</option></select></label>
+     <label for="dm-out" id="dm-w-out">Tipo da variável de desfecho
+       <select id="dm-out"><option value="num">Numérica (escore, tempo, contagem)</option><option value="ord">Ordinal (postos, escala de poucos níveis)</option><option value="cat">Categórica (sim/não, diagnóstico)</option></select></label>
+     <label for="dm-rel" id="dm-w-rel">Tipo das variáveis
+       <select id="dm-rel"><option value="nn">As duas numéricas, quero a associação</option><option value="pred">Numéricas, quero prever uma pela outra</option><option value="ord">Ordinais, ou numéricas com outliers</option><option value="cc">As duas categóricas</option></select></label>
+   </div>
+   <div class="controls" id="dm-w-cmp">
+     <label for="dm-grp">Número de grupos ou momentos
+       <select id="dm-grp"><option value="2">2</option><option value="3">3 ou mais</option></select></label>
+     <label for="dm-dsg">Delineamento
+       <select id="dm-dsg"><option value="ind">Independente (pessoas diferentes em cada grupo)</option><option value="par">Pareado (mesmas pessoas, medidas repetidas)</option></select></label>
+     <label for="dm-norm" id="dm-w-norm">Distribuição do desfecho
+       <select id="dm-norm"><option value="nor">Aproximadamente normal</option><option value="non">Muito assimétrica, com outliers ou n pequeno</option></select></label>
+   </div>
+   <div class="res" id="dm-res" aria-live="polite"></div>
+   <h3>Resumo rápido</h3>
+   <div style="overflow-x:auto"><table class="st">
+     <tr><th>Situação</th><th>Teste paramétrico</th><th>Alternativa não paramétrica</th></tr>
+     <tr><td>2 grupos independentes</td><td>t de Welch</td><td>Mann-Whitney</td></tr>
+     <tr><td>2 momentos pareados</td><td>t pareado</td><td>Wilcoxon</td></tr>
+     <tr><td>3+ grupos independentes</td><td>ANOVA</td><td>Kruskal-Wallis</td></tr>
+     <tr><td>3+ momentos pareados</td><td>ANOVA de medidas repetidas</td><td>Friedman</td></tr>
+     <tr><td>2 variáveis numéricas</td><td>Pearson / regressão</td><td>Spearman</td></tr>
+     <tr><td>2 variáveis categóricas</td><td>Qui-quadrado</td><td>Fisher (E &lt; 5), McNemar (pareado)</td></tr>
+   </table></div>
+  </div>
+  <aside class="card">
+   <h2>Como decidir</h2>
+   <div class="def"><b>1. Qual o tipo do desfecho?</b><p>Numérico, ordinal ou categórico. É a primeira bifurcação e define a família de testes.</p></div>
+   <div class="def"><b>2. Quantos grupos?</b><p>Dois grupos usam t. Três ou mais usam ANOVA, para evitar a inflação do erro tipo I.</p></div>
+   <div class="def"><b>3. As pessoas se repetem?</b><p>Antes e depois, ou o mesmo participante em várias condições, exige teste pareado ou de medidas repetidas. Ignorar isso quebra a independência das observações.</p></div>
+   <div class="def"><b>4. Os pressupostos se sustentam?</b><p>Normalidade (módulo 3), variâncias semelhantes e observações independentes. Se falham, considere a alternativa não paramétrica.</p></div>
+   <div class="def"><b>5. Relate o efeito</b><p>Além do p, informe d, η², r, R² ou V de Cramér, com intervalo de confiança.</p></div>
+  </aside>
+ </div>
+</section>
+
+<footer>Os dados dos exemplos são fictícios, gerados para fins didáticos. Fórmulas com n − 1 (estimadores amostrais).</footer>
+</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const fmt=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const sum=a=>a.reduce((s,x)=>s+x,0), mean=a=>sum(a)/a.length;
+const sdev=a=>{const m=mean(a);return Math.sqrt(sum(a.map(x=>(x-m)**2))/(a.length-1));};
+const vari=a=>{const m=mean(a);return sum(a.map(x=>(x-m)**2))/(a.length-1);};
+const quant=(s,p)=>{const h=(s.length-1)*p,i=Math.floor(h);return s[i]+(h-i)*((i+1<s.length?s[i+1]:s[i])-s[i]);};
+const sorted=a=>[...a].sort((x,y)=>x-y);
+
+function normInv(p){
+  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239];
+  const b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572];
+  const c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783];
+  const d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416];
+  const pl=0.02425;let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  q=p-0.5;r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+const cdf=z=>0.5*(1+erf(z/Math.SQRT2));
+const pdf=(x,m,s)=>Math.exp(-0.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI));
+const quantZ=n=>Array.from({length:n},(_,i)=>normInv((i+0.5)/n));
+function stdz(a,m,s){const mm=mean(a),ss=sdev(a);return a.map(x=>m+s*(x-mm)/ss);}
+
+const W=720, ML=40, MR=16;
+const el=(t,at,txt)=>`<${t} ${Object.entries(at).map(([k,v])=>k+'="'+v+'"').join(' ')}>${txt??''}</${t}>`;
+const line=(x1,y1,x2,y2,c,w=1,dash='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:''}/>`;
+const txt=(x,y,t,anchor='middle',cls='',fill='')=>`<text x="${x}" y="${y}" text-anchor="${anchor}" class="${cls}"${fill?` style="fill:${fill}"`:''}>${t}</text>`;
+function evpt(svg,e,vw,vh){const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)*vw/r.width,y:(e.clientY-r.top)*vh/r.height};}
+
+/* ---------- Abas ---------- */
+const tabs=[...document.querySelectorAll('nav button')];
+tabs.forEach(b=>b.addEventListener('click',()=>{
+  tabs.forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
+  renderAll();
+}));
+
+/* ---------- 1. Tendência central ---------- */
+const CT={
+ bdi:{lo:0,hi:63,step:1,unit:'pontos',data:[4,6,8,9,10,11,12,12,13,14,15,16,18,20,22],out:58,eg:'BDI-II'},
+ rt:{lo:400,hi:1400,step:10,unit:'ms',data:[520,540,560,575,590,600,610,620,640,650,670,700,730,780,820],out:1300,eg:'tempo de reação'},
+ ses:{lo:0,hi:40,step:1,unit:'sessões',data:[4,6,6,8,8,8,10,12,12,14,16,20,26],out:38,eg:'número de sessões'}
+};
+let ctData=[...CT.bdi.data];
+const ctCur=()=>CT[$('#ct-preset').value];
+function ctRender(){
+  const P=ctCur(),d=ctData,H=300,mt=64,base=262,x=v=>ML+(v-P.lo)/(P.hi-P.lo)*(W-ML-MR);
+  const m=mean(d),s=sorted(d),md=quant(s,.5),cnt={};d.forEach(v=>cnt[v]=(cnt[v]||0)+1);
+  const mx=Math.max(...Object.values(cnt)),modes=mx>1?Object.keys(cnt).filter(k=>cnt[k]===mx).map(Number).sort((a,b)=>a-b):[];
+  let g=line(ML,base,W-MR,base,css('--line'),1.5);
+  const ticks=5;for(let i=0;i<=ticks;i++){const v=P.lo+(P.hi-P.lo)*i/ticks;g+=line(x(v),base,x(v),base+5,css('--muted'))+txt(x(v),base+20,fmt(v,0));}
+  g+=txt(W/2,H-4,P.unit,'middle');
+  const seen={};
+  d.forEach((v,i)=>{const k=v;seen[k]=(seen[k]||0)+1;const cy=base-8-(seen[k]-1)*15;
+    g+=`<circle cx="${x(v)}" cy="${cy}" r="6.5" data-i="${i}" fill="${css('--accent')}" fill-opacity=".8" stroke="${css('--surface')}" stroke-width="1" style="cursor:pointer"><title>${v} (clique para remover)</title></circle>`;});
+  modes.forEach(v=>{g+=`<rect x="${x(v)-9}" y="${base-2}" width="18" height="5" rx="2" fill="${css('--violet')}"/>`;});
+  g+=line(x(m),mt-4,x(m),base,css('--accent'),2.5)+txt(x(m),16,'Média '+fmt(m,1),'middle','lab',css('--accent'));
+  g+=line(x(md),mt+10,x(md),base,css('--warm'),2.5,'6 4')+txt(x(md),36,'Mediana '+fmt(md,1),'middle','lab',css('--warm'));
+  if(Math.abs(x(m)-x(md))<70){ /* evita sobreposição de rótulos */ }
+  $('#ct-svg').innerHTML=g;
+  $('#ct-tiles').innerHTML=
+    `<div class="tile a"><small>Média</small><b>${fmt(m,1)}</b></div>`+
+    `<div class="tile w"><small>Mediana</small><b>${fmt(md,1)}</b></div>`+
+    `<div class="tile v"><small>Moda</small><b>${modes.length?modes.map(v=>fmt(v,0)).join(', '):'amodal'}</b></div>`+
+    `<div class="tile"><small>n</small><b>${d.length}</b></div>`;
+  const sd=d.length>1?sdev(d):0,diff=m-md;
+  $('#ct-ins').textContent=Math.abs(diff)>0.25*sd
+    ? `A média ficou ${fmt(Math.abs(diff),1)} ${diff>0?'acima':'abaixo'} da mediana: a cauda ${diff>0?'à direita':'à esquerda'} está puxando a média. Para descrever o caso típico, prefira a mediana.`
+    : 'Média e mediana estão próximas: a distribuição é aproximadamente simétrica e a média representa bem o centro.';
+}
+$('#ct-svg').addEventListener('click',e=>{
+  const P=ctCur(),p=evpt($('#ct-svg'),e,W,300);
+  const t=e.target.closest('circle[data-i]');
+  if(t){ctData.splice(+t.dataset.i,1);}
+  else if(p.x>=ML&&p.x<=W-MR&&ctData.length<40){
+    let v=P.lo+(p.x-ML)/(W-ML-MR)*(P.hi-P.lo);v=Math.round(v/P.step)*P.step;ctData.push(Math.min(P.hi,Math.max(P.lo,v)));}
+  if(ctData.length===0)ctData=[...ctCur().data].slice(0,1);
+  ctRender();
+});
+$('#ct-out').onclick=()=>{ctData.push(ctCur().out);ctRender();};
+$('#ct-undo').onclick=()=>{if(ctData.length>1)ctData.pop();ctRender();};
+$('#ct-reset').onclick=()=>{ctData=[...ctCur().data];ctRender();};
+$('#ct-preset').onchange=()=>{ctData=[...ctCur().data];ctRender();};
+
+/* ---------- 2. Dispersão ---------- */
+const DZ=quantZ(60);
+function dsGen(m,s){const z=stdz(DZ,0,1);return z.map(v=>m+s*v);}
+function dsStats(a){const s=sorted(a),m=mean(a),sd=sdev(a);
+  return {min:s[0],max:s[s.length-1],amp:s[s.length-1]-s[0],v:vari(a),sd,cv:sd/m*100,q1:quant(s,.25),med:quant(s,.5),q3:quant(s,.75),m};}
+function dsRender(){
+  const ma=+$('#ds-ma').value,mb=+$('#ds-mb').value,sa=+$('#ds-sa').value,sb=+$('#ds-sb').value;
+  $('#ds-ma-v').textContent=ma;$('#ds-mb-v').textContent=mb;$('#ds-sa-v').textContent=fmt(sa,1);$('#ds-sb-v').textContent=fmt(sb,1);
+  const A=dsGen(ma,sa),B=dsGen(mb,sb),bw=4,nb=25,ca=Array(nb).fill(0),cb=Array(nb).fill(0);
+  const bin=v=>Math.min(nb-1,Math.max(0,Math.floor(v/bw)));A.forEach(v=>ca[bin(v)]++);B.forEach(v=>cb[bin(v)]++);
+  const mx=Math.max(...ca,...cb),x=v=>ML+v/100*(W-ML-MR),top=14,hb=170,base=top+hb;
+  let g=line(ML,base,W-MR,base,css('--line'),1.5);
+  for(let v=0;v<=100;v+=10)g+=line(x(v),base,x(v),base+4,css('--muted'))+txt(x(v),base+16,v);
+  const bar=(c,i,col,op)=>c>0?`<rect x="${x(i*bw)+1}" y="${base-c/mx*hb}" width="${x(bw)-x(0)-2}" height="${c/mx*hb}" fill="${col}" fill-opacity="${op}"/>`:'';
+  ca.forEach((c,i)=>g+=bar(c,i,css('--accent'),.55));cb.forEach((c,i)=>g+=bar(c,i,css('--warm'),.5));
+  const box=(a,y,col,lab)=>{const st=dsStats(a);
+    return line(x(st.min),y,x(st.max),y,col,2)+line(x(st.min),y-6,x(st.min),y+6,col,2)+line(x(st.max),y-6,x(st.max),y+6,col,2)+
+      `<rect x="${x(st.q1)}" y="${y-9}" width="${Math.max(1,x(st.q3)-x(st.q1))}" height="18" fill="${col}" fill-opacity=".25" stroke="${col}" stroke-width="2"/>`+
+      line(x(st.med),y-9,x(st.med),y+9,col,3)+txt(ML-4,y+4,lab,'end','lab',col);};
+  g+=box(A,base+44,css('--accent'),'A')+box(B,base+72,css('--warm'),'B');
+  g+=txt(W/2,296,'Escore de ansiedade','middle');
+  $('#ds-svg').innerHTML=g;
+  const SA=dsStats(A),SB=dsStats(B);
+  const rows=[['Média','m',1],['Amplitude','amp',1],['Variância','v',1],['Desvio padrão','sd',2],['CV (%)','cv',1],['Q1','q1',1],['Mediana','med',1],['Q3','q3',1]];
+  $('#ds-tab').innerHTML=`<tr><th>Medida</th><th><span class="sw" style="background:var(--accent)"></span>Grupo A</th><th><span class="sw" style="background:var(--warm)"></span>Grupo B</th></tr>`+
+    rows.map(r=>`<tr><td>${r[0]}</td><td>${fmt(SA[r[1]],r[2])}</td><td>${fmt(SB[r[1]],r[2])}</td></tr>`).join('')+
+    `<tr><td>Intervalo interquartil</td><td>${fmt(SA.q3-SA.q1,1)}</td><td>${fmt(SB.q3-SB.q1,1)}</td></tr>`;
+  $('#ds-ins').textContent= ma===mb
+    ? `Médias iguais (${ma}), mas o grupo ${sb>sa?'B':'A'} é ${fmt(Math.max(sa,sb)/Math.min(sa,sb),1).replace(/,0$/,'')} vez(es) mais disperso. A média sozinha esconde essa diferença.`
+    : sa===sb ? `Mesmo DP (${fmt(sa,1)}), mas médias diferentes: as curvas têm a mesma forma e estão deslocadas em ${Math.abs(ma-mb)} pontos.`
+    : `Os grupos diferem na média e na dispersão. Compare o CV: A = ${fmt(SA.cv,1)}% e B = ${fmt(SB.cv,1)}%.`;
+}
+['ma','mb','sa','sb'].forEach(k=>$('#ds-'+k).addEventListener('input',dsRender));
+$('#ds-p1').onclick=()=>{$('#ds-ma').value=50;$('#ds-mb').value=50;$('#ds-sa').value=6;$('#ds-sb').value=16;dsRender();};
+$('#ds-p2').onclick=()=>{$('#ds-ma').value=40;$('#ds-mb').value=60;$('#ds-sa').value=9;$('#ds-sb').value=9;dsRender();};
+
+/* ---------- 3. Forma ---------- */
+const FZ=quantZ(400);
+function fmGen(eps,del){const raw=FZ.map(z=>Math.sinh(del*Math.asinh(z)+eps));return stdz(raw,50,10);}
+function moments(a){const m=mean(a),n=a.length,m2=sum(a.map(x=>(x-m)**2))/n,m3=sum(a.map(x=>(x-m)**3))/n,m4=sum(a.map(x=>(x-m)**4))/n;return {g1:m3/m2**1.5,g2:m4/m2**2-3};}
+function fmRender(){
+  const e=+$('#fm-sk').value,k=+$('#fm-ku').value;
+  $('#fm-sk-v').textContent=fmt(e,2);$('#fm-ku-v').textContent=fmt(k,2);
+  const d=fmGen(e,k),{g1,g2}=moments(d),md=quant(sorted(d),.5);
+  const lo=0,hi=100,bw=2.5,nb=40,c=Array(nb).fill(0);d.forEach(v=>{const i=Math.floor((v-lo)/bw);if(i>=0&&i<nb)c[i]++;});
+  const x=v=>ML+(v-lo)/(hi-lo)*(W-ML-MR),top=24,hb=210,base=top+hb,ymax=Math.max(...c,pdf(50,50,10)*d.length*bw)*1.08;
+  let g=line(ML,base,W-MR,base,css('--line'),1.5);
+  for(let v=0;v<=100;v+=10)g+=line(x(v),base,x(v),base+4,css('--muted'))+txt(x(v),base+17,v);
+  c.forEach((n,i)=>{if(n)g+=`<rect x="${x(lo+i*bw)+.5}" y="${base-n/ymax*hb}" width="${x(bw)-x(0)-1}" height="${n/ymax*hb}" fill="${css('--accent')}" fill-opacity=".6"/>`;});
+  let path='';for(let v=lo;v<=hi;v+=1){const y=base-pdf(v,50,10)*d.length*bw/ymax*hb;path+=(v===lo?'M':'L')+x(v).toFixed(1)+' '+y.toFixed(1);}
+  g+=`<path d="${path}" fill="none" stroke="${css('--violet')}" stroke-width="2" stroke-dasharray="6 4"/>`;
+  g+=line(x(50),top-6,x(50),base,css('--accent'),2.5)+line(x(md),top+8,x(md),base,css('--warm'),2.5,'6 4');
+  const left=md<50;
+  g+=txt(x(50)+(left?6:-6),top+2,'Média','middle'===''?'':(left?'start':'end'),'lab',css('--accent'));
+  g+=txt(x(md)+(left?-6:6),top+16,'Mediana',left?'end':'start','lab',css('--warm'));
+  $('#fm-svg').innerHTML=g;
+  const sk=Math.abs(g1)<0.2?'aproximadamente simétrica':g1>0?'assimetria positiva (cauda à direita)':'assimetria negativa (cauda à esquerda)';
+  const ku=Math.abs(g2)<0.4?'mesocúrtica':g2>0?'leptocúrtica':'platicúrtica';
+  $('#fm-tiles').innerHTML=
+    `<div class="tile a"><small>Assimetria g₁</small><b>${fmt(g1,2)}</b></div>`+
+    `<div class="tile v"><small>Curtose g₂</small><b>${fmt(g2,2)}</b></div>`+
+    `<div class="tile"><small>Média</small><b>50,0</b></div>`+
+    `<div class="tile w"><small>Mediana</small><b>${fmt(md,1)}</b></div>`;
+  $('#fm-ins').textContent=`Distribuição ${sk} e ${ku}. ${Math.abs(g1)>=1||Math.abs(g2)>=2?'Considere transformação dos dados ou testes não paramétricos.':'Em geral, é tolerável para análises paramétricas.'}`;
+}
+$('#fm-sk').addEventListener('input',fmRender);$('#fm-ku').addEventListener('input',fmRender);
+[[0,1],[0.9,1],[-0.9,1],[0,0.65],[0,1.55]].forEach((p,i)=>$('#fm-p'+i).onclick=()=>{$('#fm-sk').value=p[0];$('#fm-ku').value=p[1];fmRender();});
+
+/* ---------- 4. Curva normal ---------- */
+const NC={iq:{m:100,s:15,u:'QI'},t:{m:50,s:10,u:'T'},z:{m:0,s:1,u:'z'},sc:{m:10,s:3,u:'ponderado'}};
+const iqClass=v=>v>=130?'Muito superior':v>=120?'Superior':v>=110?'Médio superior':v>=90?'Médio':v>=80?'Médio inferior':v>=70?'Limítrofe':'Extremamente baixo';
+function ncSetup(){
+  const P=NC[$('#nc-preset').value];
+  [$('#nc-a'),$('#nc-b')].forEach(r=>{r.min=P.m-4*P.s;r.max=P.m+4*P.s;r.step=P.s/20;});
+  $('#nc-a').value=P.m-P.s;$('#nc-b').value=P.m+P.s;
+  if($('#nc-mode').value==='below')$('#nc-a').value=P.m+P.s*(P.u==='z'?-1:-1);
+  ncRender();
+}
+function ncRender(){
+  const P=NC[$('#nc-preset').value],mode=$('#nc-mode').value;
+  let a=+$('#nc-a').value,b=+$('#nc-b').value;
+  $('#nc-bw').style.display=mode==='between'?'flex':'none';
+  $('#nc-al').textContent=mode==='between'?'Valor inferior':'Valor';
+  const lo=Math.min(a,b),hi=Math.max(a,b);
+  $('#nc-a-v').textContent=fmt(a,P.s<2?2:1);$('#nc-b-v').textContent=fmt(b,P.s<2?2:1);
+  const x=v=>ML+(v-(P.m-4*P.s))/(8*P.s)*(W-ML-MR),top=20,hb=190,base=top+hb,ymax=pdf(P.m,P.m,P.s);
+  const y=v=>base-pdf(v,P.m,P.s)/ymax*hb;
+  const region=mode==='below'?[P.m-4*P.s,a]:mode==='above'?[a,P.m+4*P.s]:[lo,hi];
+  let g='';
+  if($('#nc-rule').checked){
+    [[1,.16,'68%'],[2,.1,'95%'],[3,.06,'99,7%']].forEach(([k,op,t],i)=>{
+      g+=`<rect x="${x(P.m-k*P.s)}" y="${top-10+i*0}" width="${x(P.m+k*P.s)-x(P.m-k*P.s)}" height="${hb+10}" fill="${css('--violet')}" fill-opacity="${op}"/>`;
+      g+=txt(x(P.m),base+50+i*0,'', 'middle');});
+    g+=[1,2,3].map((k,i)=>txt(x(P.m),top+14+i*14,['68% em ±1 DP','95% em ±2 DP','99,7% em ±3 DP'][i]+'','middle','lab',css('--violet'))).join('');
+  } else {
+    let sh=`M${x(region[0]).toFixed(1)} ${base}`;
+    for(let v=region[0];v<=region[1];v+=P.s/25)sh+=`L${x(v).toFixed(1)} ${y(v).toFixed(1)}`;
+    sh+=`L${x(region[1]).toFixed(1)} ${y(region[1]).toFixed(1)}L${x(region[1]).toFixed(1)} ${base}Z`;
+    g+=`<path d="${sh}" fill="${css('--accent')}" fill-opacity=".35"/>`;
+  }
+  let cv='';for(let v=P.m-4*P.s;v<=P.m+4*P.s+1e-9;v+=P.s/25)cv+=(cv?'L':'M')+x(v).toFixed(1)+' '+y(v).toFixed(1);
+  g+=`<path d="${cv}" fill="none" stroke="${css('--ink')}" stroke-width="2"/>`+line(ML,base,W-MR,base,css('--line'),1.5);
+  for(let k=-3;k<=3;k++){const v=P.m+k*P.s;g+=line(x(v),base,x(v),base+5,css('--muted'))+txt(x(v),base+19,fmt(v,P.s<2?0:0))+txt(x(v),base+34,'z = '+k,'middle','',css('--accent'));}
+  const mk=(v)=>line(x(v),top,x(v),base,css('--warm'),2.5);
+  if(mode==='between')g+=mk(lo)+mk(hi);else g+=mk(a);
+  g+=txt(W/2,base+58,'Escala: '+(P.u==='QI'?'QI Wechsler':P.u==='T'?'Escore T':P.u==='z'?'Escore z':'Escore ponderado'),'middle');
+  $('#nc-svg').innerHTML=g;
+  const za=(a-P.m)/P.s,zl=(lo-P.m)/P.s,zh=(hi-P.m)/P.s;
+  let prob,ztxt;
+  if(mode==='below'){prob=cdf(za);ztxt=fmt(za,2);}
+  else if(mode==='above'){prob=1-cdf(za);ztxt=fmt(za,2);}
+  else{prob=cdf(zh)-cdf(zl);ztxt=fmt(zl,2)+' a '+fmt(zh,2);}
+  const pct=cdf(za)*100;
+  $('#nc-tiles').innerHTML=
+    `<div class="tile a"><small>Área na região</small><b>${fmt(prob*100,1)}%</b></div>`+
+    `<div class="tile v"><small>Escore z</small><b>${ztxt}</b></div>`+
+    (mode==='between'?'':`<div class="tile w"><small>Percentil</small><b>${fmt(pct,1)}</b></div>`)+
+    (P.u==='QI'&&mode!=='between'?`<div class="tile"><small>Classificação</small><b style="font-size:16px">${iqClass(a)}</b></div>`:'');
+  const dir=za>=0?'acima':'abaixo';
+  $('#nc-ins').textContent= mode==='between'
+    ? `Cerca de ${fmt(prob*100,1)}% das pessoas têm escore entre ${fmt(lo,1)} e ${fmt(hi,1)}.`
+    : `Um escore de ${fmt(a,1)} está ${fmt(Math.abs(za),2)} DP ${dir} da média e supera ${fmt(pct,1)}% da população normativa. ${mode==='below'?'A região sombreada contém '+fmt(prob*100,1)+'% dos casos.':'Acima dele ficam '+fmt((1-cdf(za))*100,1)+'% dos casos.'}`;
+}
+['nc-a','nc-b'].forEach(i=>$('#'+i).addEventListener('input',ncRender));
+$('#nc-mode').onchange=ncRender;$('#nc-rule').onchange=ncRender;$('#nc-preset').onchange=ncSetup;
+
+/* ---------- 5. Correlação ---------- */
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const R=rng(20260);const BZ1=[],BZ2=[];
+for(let i=0;i<200;i++){const u=R(),v=R();const r=Math.sqrt(-2*Math.log(u+1e-12));BZ1.push(r*Math.cos(2*Math.PI*v));BZ2.push(r*Math.sin(2*Math.PI*v));}
+const CO={
+ sono:{x:'Horas de sono',y:'Atenção sustentada (escore T)',mx:7,sx:1.2,my:50,sy:10,r:.55,dx:1},
+ ans:{x:'Ansiedade (GAD-7)',y:'Depressão (PHQ-9)',mx:8,sx:4,my:9,sy:5,r:.65,dx:0},
+ rs:{x:'Horas diárias em redes sociais',y:'Satisfação corporal (0–100)',mx:3,sx:1.5,my:55,sy:15,r:-.35,dx:1}
+};
+let coOut=0;
+function rank(a){const idx=a.map((v,i)=>[v,i]).sort((p,q)=>p[0]-q[0]),r=Array(a.length);let i=0;
+  while(i<idx.length){let j=i;while(j+1<idx.length&&idx[j+1][0]===idx[i][0])j++;const av=(i+j)/2+1;for(let k=i;k<=j;k++)r[idx[k][1]]=av;i=j+1;}return r;}
+function pearson(x,y){const mx=mean(x),my=mean(y);let sxy=0,sxx=0,syy=0;for(let i=0;i<x.length;i++){sxy+=(x[i]-mx)*(y[i]-my);sxx+=(x[i]-mx)**2;syy+=(y[i]-my)**2;}return sxy/Math.sqrt(sxx*syy);}
+function coRender(){
+  const P=CO[$('#co-preset').value],r=+$('#co-r').value,n=+$('#co-n').value;
+  $('#co-r-v').textContent=fmt(r,2);$('#co-n-v').textContent=n;
+  let z1=stdz(BZ1.slice(0,n),0,1),z2=BZ2.slice(0,n);
+  const c=sum(z1.map((v,i)=>v*z2[i]))/sum(z1.map(v=>v*v));z2=stdz(z2.map((v,i)=>v-c*z1[i]),0,1);
+  const zy=z1.map((v,i)=>r*v+Math.sqrt(1-r*r)*z2[i]);
+  const zx=[...z1],zyy=[...zy];for(let i=0;i<coOut;i++){zx.push(3.2-i*.3);zyy.push(-3.2+i*.3);}
+  const X=zx.map(v=>P.mx+P.sx*v),Y=zyy.map(v=>P.my+P.sy*v);
+  const H=340,mt=14,mb=48,ml=52,pw=W-ml-MR,ph=H-mt-mb,sx=z=>ml+(z+3.6)/7.2*pw,sy=z=>mt+ph-(z+3.6)/7.2*ph;
+  let g=`<rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="none" stroke="${css('--line')}"/>`;
+  for(let z=-3;z<=3;z+=1.5){g+=line(sx(z),mt,sx(z),mt+ph,css('--line'),.6)+line(ml,sy(z),ml+pw,sy(z),css('--line'),.6)+
+    txt(sx(z),mt+ph+16,fmt(P.mx+P.sx*z,P.dx))+txt(ml-6,sy(z)+4,fmt(P.my+P.sy*z,0),'end');}
+  g+=txt(ml+pw/2,H-6,P.x,'middle','lab')+`<text transform="translate(12 ${mt+ph/2}) rotate(-90)" text-anchor="middle" class="lab">${P.y}</text>`;
+  const N=zx.length;
+  for(let i=0;i<N;i++){const out=i>=n;g+=`<circle cx="${sx(zx[i]).toFixed(1)}" cy="${sy(zyy[i]).toFixed(1)}" r="${out?7:4.5}" fill="${out?css('--warm'):css('--accent')}" fill-opacity="${out?.95:.65}"/>`;}
+  const rr=pearson(zx,zyy),b1=rr*sdev(zyy)/sdev(zx),b0=mean(zyy)-b1*mean(zx);
+  if($('#co-line').checked){const z0=-3.6,z1b=3.6;g+=line(sx(z0),sy(b0+b1*z0),sx(z1b),sy(b0+b1*z1b),css('--violet'),2.5);}
+  $('#co-svg').innerHTML=g;
+  const rho=pearson(rank(zx),rank(zyy)),ar=Math.abs(rr);
+  const mag=ar<.1?'desprezível':ar<.3?'pequena':ar<.5?'moderada':'grande';
+  const slope=b1*P.sy/P.sx;
+  $('#co-tiles').innerHTML=
+    `<div class="tile a"><small>Pearson r</small><b>${fmt(rr,2)}</b></div>`+
+    `<div class="tile v"><small>r² (variância compartilhada)</small><b>${fmt(rr*rr*100,1)}%</b></div>`+
+    `<div class="tile w"><small>Spearman ρ</small><b>${fmt(rho,2)}</b></div>`+
+    `<div class="tile"><small>n</small><b>${N}</b></div>`;
+  $('#co-ins').textContent=`Correlação ${rr<0?'negativa':'positiva'} de magnitude ${mag}. A cada ${fmt(P.sx,P.dx)} em "${P.x}", o valor previsto de "${P.y}" muda ${fmt(slope*P.sx,1)}. ${coOut?'Os pontos laranja são casos atípicos: compare r com ρ.':'Correlação não implica causalidade.'}`;
+}
+$('#co-preset').onchange=()=>{$('#co-r').value=CO[$('#co-preset').value].r;coOut=0;coRender();};
+['co-r','co-n'].forEach(i=>$('#'+i).addEventListener('input',coRender));
+$('#co-line').onchange=coRender;
+$('#co-out').onclick=()=>{if(coOut<3)coOut++;coRender();};
+$('#co-rm').onclick=()=>{coOut=0;coRender();};
+
+/* ---------- Distribuição t (p-valores) ---------- */
+function lgam(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(let j=0;j<6;j++)s+=c[j]/++y;return -t+Math.log(2.5066282746310005*s/x);}
+function betacf(a,b,x){const FP=1e-300,qab=a+b,qap=a+1,qam=a-1;let c=1,d=1-qab*x/qap;if(Math.abs(d)<FP)d=FP;d=1/d;let h=d;
+  for(let m=1;m<=200;m++){const m2=2*m;let aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;if(Math.abs(d)<FP)d=FP;c=1+aa/c;if(Math.abs(c)<FP)c=FP;d=1/d;h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;if(Math.abs(d)<FP)d=FP;c=1+aa/c;if(Math.abs(c)<FP)c=FP;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<3e-12)break;}return h;}
+function betai(a,b,x){if(x<=0)return 0;if(x>=1)return 1;const bt=Math.exp(lgam(a+b)-lgam(a)-lgam(b)+a*Math.log(x)+b*Math.log(1-x));
+  return x<(a+1)/(a+b+2)?bt*betacf(a,b,x)/a:1-bt*betacf(b,a,1-x)/b;}
+const tTwoP=(t,df)=>betai(df/2,.5,df/(df+t*t));
+const tPdf=(t,df)=>Math.exp(lgam((df+1)/2)-lgam(df/2))/Math.sqrt(df*Math.PI)*Math.pow(1+t*t/df,-(df+1)/2);
+function tCrit(df){let lo=0,hi=60;for(let i=0;i<60;i++){const m=(lo+hi)/2;if(tTwoP(m,df)>.05)lo=m;else hi=m;}return (lo+hi)/2;}
+const fmtP=p=>p<0.001?'< 0,001':fmt(p,3);
+const gauss=g=>{const u=g(),v=g();return Math.sqrt(-2*Math.log(u+1e-12))*Math.cos(2*Math.PI*v);};
+
+/* ---------- 6. Comparação de médias ---------- */
+let cmSeed=11,cmZ=null;
+function cmGen(){const g=rng(cmSeed);cmZ={a:[],b:[]};for(let i=0;i<300;i++){cmZ.a.push(gauss(g));cmZ.b.push(gauss(g));}}
+function cmRender(){
+  if(!cmZ)cmGen();
+  const ma=+$('#cm-ma').value,mb=+$('#cm-mb').value,s=+$('#cm-s').value,n=+$('#cm-n').value;
+  $('#cm-ma-v').textContent=ma;$('#cm-mb-v').textContent=mb;$('#cm-s-v').textContent=fmt(s,1);$('#cm-n-v').textContent=n;
+  const A=cmZ.a.slice(0,n).map(z=>ma+s*z),B=cmZ.b.slice(0,n).map(z=>mb+s*z);
+  const mA=mean(A),mB=mean(B),vA=vari(A),vB=vari(B),se=Math.sqrt(vA/n+vB/n),t=(mB-mA)/se;
+  const df=(vA/n+vB/n)**2/((vA/n)**2/(n-1)+(vB/n)**2/(n-1)),p=tTwoP(t,df),tc=tCrit(df);
+  const diff=mB-mA,d=diff/Math.sqrt((vA+vB)/2),ci=[diff-tc*se,diff+tc*se];
+  const x=v=>ML+Math.min(100,Math.max(0,v))/100*(W-ML-MR);
+  let g='';
+  const row=(arr,y,col,lab,m,v)=>{
+    let o=txt(ML,y-30,`${lab} (n = ${n}, M = ${fmt(m,1)})`,'start','lab',col);
+    arr.forEach((val,i)=>{const j=((i*53)%17-8)*1.9;o+=`<circle cx="${x(val).toFixed(1)}" cy="${(y+j).toFixed(1)}" r="3.3" fill="${col}" fill-opacity=".5"/>`;});
+    const h=tCrit(n-1)*Math.sqrt(v/n),yy=y+30;
+    o+=line(x(m-h),yy,x(m+h),yy,col,3)+line(x(m-h),yy-5,x(m-h),yy+5,col,2)+line(x(m+h),yy-5,x(m+h),yy+5,col,2)+`<circle cx="${x(m)}" cy="${yy}" r="5" fill="${col}"/>`;
+    return o+line(x(m),y-22,x(m),y+22,col,2);};
+  g+=row(A,56,css('--accent'),'Lista de espera',mA,vA)+row(B,126,css('--warm'),'Intervenção',mB,vB);
+  g+=line(ML,170,W-MR,170,css('--line'),1.5);for(let v=0;v<=100;v+=20)g+=line(x(v),170,x(v),175,css('--muted'))+txt(x(v),187,v);
+  g+=txt(W/2,201,'Escore de bem-estar (barras: IC 95% de cada média)','middle');
+  const T=Math.min(8,Math.max(4.5,Math.abs(t)+.8)),x2=v=>ML+(v+T)/(2*T)*(W-ML-MR),base=316,hb=82,y0=tPdf(0,df),y2=v=>base-tPdf(v,df)/y0*hb;
+  const area=(a,b,col)=>{let q=`M${x2(a).toFixed(1)} ${base}`;for(let v=a;v<=b+1e-9;v+=T/80)q+=`L${x2(v).toFixed(1)} ${y2(v).toFixed(1)}`;return `<path d="${q}L${x2(b).toFixed(1)} ${base}Z" fill="${col}" fill-opacity=".4"/>`;};
+  g+=area(-T,-tc,css('--warm'))+area(tc,T,css('--warm'));
+  let cv='';for(let v=-T;v<=T+1e-9;v+=T/80)cv+=(cv?'L':'M')+x2(v).toFixed(1)+' '+y2(v).toFixed(1);
+  g+=`<path d="${cv}" fill="none" stroke="${css('--ink')}" stroke-width="2"/>`+line(ML,base,W-MR,base,css('--line'),1.5);
+  for(let v=-Math.floor(T);v<=Math.floor(T);v++)g+=line(x2(v),base,x2(v),base+4,css('--muted'))+txt(x2(v),base+16,v);
+  const to=Math.max(-T+.1,Math.min(T-.1,t));
+  g+=line(x2(to),base-hb-6,x2(to),base,css('--violet'),3)+txt(x2(to)+(to>0?-6:6),base-hb-10,'t observado = '+fmt(t,2),to>0?'end':'start','lab',css('--violet'));
+  g+=txt(x2(tc)+4,base-6,'rejeição (α = 0,05, t crítico = ±'+fmt(tc,2)+')','start','',css('--warm'));
+  $('#cm-svg').innerHTML=g;
+  $('#cm-tiles').innerHTML=
+   `<div class="tile a"><small>Diferença (interv. − espera)</small><b>${fmt(diff,1)}</b></div>`+
+   `<div class="tile"><small>t (gl)</small><b>${fmt(t,2)}</b><small>gl = ${fmt(df,1)}</small></div>`+
+   `<div class="tile w"><small>Valor p</small><b>${fmtP(p)}</b></div>`+
+   `<div class="tile v"><small>d de Cohen</small><b>${fmt(d,2)}</b></div>`+
+   `<div class="tile"><small>IC 95% da diferença</small><b style="font-size:16px">${fmt(ci[0],1)} a ${fmt(ci[1],1)}</b></div>`;
+  const ad=Math.abs(d),mag=ad<.2?'desprezível':ad<.5?'pequeno':ad<.8?'médio':'grande',sig=p<.05;
+  let tx=`${sig?'Rejeita-se H₀':'Não se rejeita H₀'} (p ${p<.001?'< 0,001':'= '+fmt(p,3)}). A diferença observada é de ${fmt(diff,1)} pontos, com efeito ${mag} (d = ${fmt(d,2)}).`;
+  if(sig&&ad<.3)tx+=' Estatisticamente significativo, mas de pouca relevância prática: com n grande, efeitos pequenos já dão p < 0,05.';
+  else if(!sig&&ad>=.5)tx+=' Efeito de bom tamanho sem significância sugere pouco poder estatístico: a amostra é pequena.';
+  else if(!sig&&mb===ma)tx+=' Não há efeito real nesta população: um resultado significativo seria um falso positivo (erro tipo I).';
+  $('#cm-ins').textContent=tx;
+}
+['ma','mb','s','n'].forEach(k=>$('#cm-'+k).addEventListener('input',cmRender));
+$('#cm-new').onclick=()=>{cmSeed=Math.floor(Math.random()*1e6)+1;cmGen();cmRender();};
+const cmSet=(a,b,s,n)=>()=>{$('#cm-ma').value=a;$('#cm-mb').value=b;$('#cm-s').value=s;$('#cm-n').value=n;cmRender();};
+$('#cm-p0').onclick=cmSet(50,50,12,30);$('#cm-p1').onclick=cmSet(50,53,12,250);$('#cm-p2').onclick=cmSet(50,66,12,12);
+
+/* ---------- 7. Regressão linear ---------- */
+const RG={
+ ter:{x:'Sessões de terapia',y:'Redução no BDI-II (pontos)',n:24,xlo:2,xhi:20,a:-1,b:1.2,sd:5,seed:5,dx:0},
+ age:{x:'Idade (anos)',y:'Tempo de reação (ms)',n:30,xlo:20,xhi:80,a:380,b:3.2,sd:55,seed:9,dx:0},
+ sono:{x:'Horas de sono',y:'Atenção (escore T)',n:28,xlo:4,xhi:9,a:20,b:4.5,sd:6,seed:3,dx:1}
+};
+let rgPts=[],rgR={};
+const RGH=340,RGML=56,RGMT=14,RGMB=48;
+function ols(p){const n=p.length,X=p.map(q=>q[0]),Y=p.map(q=>q[1]),mx=mean(X),my=mean(Y);
+  let sxx=0,sxy=0,syy=0;for(let i=0;i<n;i++){sxx+=(X[i]-mx)**2;sxy+=(X[i]-mx)*(Y[i]-my);syy+=(Y[i]-my)**2;}
+  const b1=sxy/sxx,b0=my-b1*mx;let sse=0;for(let i=0;i<n;i++)sse+=(Y[i]-b0-b1*X[i])**2;
+  const se=Math.sqrt(sse/(n-2)/sxx),t=b1/se;return {n,mx,my,b0,b1,sse,sst:syy,r2:1-sse/syy,se,t,p:tTwoP(t,n-2),sy:Math.sqrt(syy/(n-1))};}
+function rgLoad(){
+  const P=RG[$('#rg-preset').value],g=rng(P.seed);rgPts=[];
+  for(let i=0;i<P.n;i++){const x=P.xlo+(P.xhi-P.xlo)*g();rgPts.push([x,P.a+P.b*x+P.sd*gauss(g)]);}
+  const ys=rgPts.map(q=>q[1]),sp=P.xhi-P.xlo;
+  rgR={x0:P.xlo-sp*.08,x1:P.xhi+sp*.08,y0:Math.min(...ys)-P.sd*.8,y1:Math.max(...ys)+P.sd*.8};
+  const o=ols(rgPts),smax=2.5*Math.abs(o.b1);
+  const sl=$('#rg-sl'),lv=$('#rg-lv'),x0=$('#rg-x0');
+  sl.min=-smax;sl.max=smax;sl.step=smax/200;sl.value=0;
+  lv.min=rgR.y0;lv.max=rgR.y1;lv.step=(rgR.y1-rgR.y0)/200;lv.value=o.my;
+  x0.min=rgR.x0;x0.max=rgR.x1;x0.step=(rgR.x1-rgR.x0)/200;x0.value=o.mx;
+  rgRender();
+}
+function rgRender(){
+  const P=RG[$('#rg-preset').value],o=ols(rgPts),sl=+$('#rg-sl').value,lv=+$('#rg-lv').value,xp=+$('#rg-x0').value;
+  const dxy=P.b<10?2:1;
+  $('#rg-sl-v').textContent=fmt(sl,dxy);$('#rg-lv-v').textContent=fmt(lv,1);$('#rg-x0-v').textContent=fmt(xp,P.dx);
+  const pw=W-RGML-MR,ph=RGH-RGMT-RGMB,sx=v=>RGML+(v-rgR.x0)/(rgR.x1-rgR.x0)*pw,sy=v=>RGMT+ph-(v-rgR.y0)/(rgR.y1-rgR.y0)*ph;
+  const f=x=>lv+sl*(x-o.mx),fo=x=>o.b0+o.b1*x;
+  let g=`<rect x="${RGML}" y="${RGMT}" width="${pw}" height="${ph}" fill="none" stroke="${css('--line')}"/>`;
+  for(let i=0;i<=4;i++){const vx=rgR.x0+(rgR.x1-rgR.x0)*i/4,vy=rgR.y0+(rgR.y1-rgR.y0)*i/4;
+    g+=line(sx(vx),RGMT,sx(vx),RGMT+ph,css('--line'),.6)+line(RGML,sy(vy),RGML+pw,sy(vy),css('--line'),.6)+txt(sx(vx),RGMT+ph+16,fmt(vx,P.dx))+txt(RGML-6,sy(vy)+4,fmt(vy,0),'end');}
+  g+=txt(RGML+pw/2,RGH-6,P.x,'middle','lab')+`<text transform="translate(12 ${RGMT+ph/2}) rotate(-90)" text-anchor="middle" class="lab">${P.y}</text>`;
+  let sseU=0;
+  rgPts.forEach(([x,y],i)=>{sseU+=(y-f(x))**2;if($('#rg-res').checked)g+=line(sx(x),sy(y),sx(x),sy(f(x)),css('--warm'),1.6);});
+  rgPts.forEach(([x,y],i)=>{g+=`<circle data-i="${i}" cx="${sx(x).toFixed(1)}" cy="${sy(y).toFixed(1)}" r="4.8" fill="${css('--accent')}" fill-opacity=".8" stroke="${css('--surface')}" style="cursor:pointer"/>`;});
+  const seg=(fn,col,w,dash)=>line(sx(rgR.x0),sy(fn(rgR.x0)),sx(rgR.x1),sy(fn(rgR.x1)),col,w,dash);
+  const clipId='rgclip';
+  g=`<defs><clipPath id="${clipId}"><rect x="${RGML}" y="${RGMT}" width="${pw}" height="${ph}"/></clipPath></defs>`+g.replace(/(<line[^>]*stroke-width="1.6"[^>]*\/>)/g,'$1');
+  let lines=seg(f,css('--violet'),3);
+  if($('#rg-ols').checked)lines+=seg(fo,css('--accent'),2.5,'7 5');
+  g+=`<g clip-path="url(#${clipId})">${lines}</g>`;
+  const yh=fo(xp),inside=xp>=Math.min(...rgPts.map(q=>q[0]))&&xp<=Math.max(...rgPts.map(q=>q[0]));
+  if(yh>=rgR.y0&&yh<=rgR.y1){g+=line(sx(xp),RGMT+ph,sx(xp),sy(yh),css('--ink'),1.3,'3 3')+line(RGML,sy(yh),sx(xp),sy(yh),css('--ink'),1.3,'3 3')+`<circle cx="${sx(xp)}" cy="${sy(yh)}" r="6" fill="none" stroke="${css('--ink')}" stroke-width="2.5"/>`;}
+  $('#rg-svg').innerHTML=g;
+  const r2u=1-sseU/o.sst,near=sseU<=o.sse*1.01;
+  $('#rg-tiles').innerHTML=
+   `<div class="tile v"><small>SSE da sua reta</small><b>${fmt(sseU,0)}</b></div>`+
+   `<div class="tile a"><small>SSE mínimo (ótima)</small><b>${fmt(o.sse,0)}</b></div>`+
+   `<div class="tile"><small>R² da sua reta</small><b>${fmt(r2u*100,1)}%</b></div>`+
+   `<div class="tile a"><small>R² da reta ótima</small><b>${fmt(o.r2*100,1)}%</b></div>`+
+   `<div class="tile"><small>b₁ ótimo (p)</small><b style="font-size:17px">${fmt(o.b1,dxy)}</b><small>p ${fmtP(o.p)}</small></div>`+
+   `<div class="tile w"><small>Previsto ŷ em x = ${fmt(xp,P.dx)}</small><b>${fmt(yh,1)}</b></div>`;
+  let tx=near?'Sua reta está praticamente igual à de mínimos quadrados: não há como reduzir mais a soma dos quadrados dos resíduos. ':
+    `Sua reta deixa uma soma de quadrados dos resíduos de ${fmt(sseU,0)}; a de mínimos quadrados chega a ${fmt(o.sse,0)}, o menor valor possível. `;
+  tx+=`Equação ótima: ŷ = ${fmt(o.b0,1)} ${o.b1<0?'−':'+'} ${fmt(Math.abs(o.b1),dxy)}·x. A cada unidade de "${P.x}", o previsto muda ${fmt(o.b1,dxy)}.`;
+  if(!inside)tx+=' Atenção: este x está fora da faixa observada, então a previsão é uma extrapolação.';
+  $('#rg-ins').textContent=tx;
+}
+['rg-lv','rg-sl','rg-x0','rg-res','rg-ols'].forEach(i=>$('#'+i).addEventListener('input',rgRender));
+$('#rg-preset').onchange=rgLoad;$('#rg-reset').onclick=rgLoad;
+$('#rg-flat').onclick=()=>{const o=ols(rgPts);$('#rg-sl').value=0;$('#rg-lv').value=o.my;rgRender();};
+$('#rg-fit').onclick=()=>{const o=ols(rgPts);$('#rg-sl').value=o.b1;$('#rg-lv').value=o.my;rgRender();};
+$('#rg-svg').addEventListener('click',e=>{
+  const t=e.target.closest('circle[data-i]');
+  if(t){if(rgPts.length>4)rgPts.splice(+t.dataset.i,1);}
+  else{const p=evpt($('#rg-svg'),e,W,RGH),pw=W-RGML-MR,ph=RGH-RGMT-RGMB;
+    if(p.x>RGML&&p.x<RGML+pw&&p.y>RGMT&&p.y<RGMT+ph&&rgPts.length<60)
+      rgPts.push([rgR.x0+(p.x-RGML)/pw*(rgR.x1-rgR.x0),rgR.y0+(RGMT+ph-p.y)/ph*(rgR.y1-rgR.y0)]);}
+  rgRender();
+});
+
+/* ---------- F e qui-quadrado ---------- */
+const fP=(F,d1,d2)=>betai(d2/2,d1/2,d2/(d2+d1*F));
+const FPdf=(x,d1,d2)=>Math.exp(lgam((d1+d2)/2)-lgam(d1/2)-lgam(d2/2)+(d1/2)*Math.log(d1/d2)+(d1/2-1)*Math.log(x)-((d1+d2)/2)*Math.log(1+d1*x/d2));
+function fCrit(d1,d2){let lo=0,hi=200;for(let i=0;i<70;i++){const m=(lo+hi)/2;if(fP(m,d1,d2)>.05)lo=m;else hi=m;}return (lo+hi)/2;}
+function gammaP(a,x){if(x<=0)return 0;const gln=lgam(a);
+  if(x<a+1){let ap=a,s=1/a,del=s;for(let n=0;n<500;n++){ap++;del*=x/ap;s+=del;if(Math.abs(del)<Math.abs(s)*1e-13)break;}return s*Math.exp(-x+a*Math.log(x)-gln);}
+  let b=x+1-a,c=1e300,d=1/b,h=d;for(let i=1;i<500;i++){const an=-i*(i-a);b+=2;d=an*d+b;if(Math.abs(d)<1e-300)d=1e-300;c=b+an/c;if(Math.abs(c)<1e-300)c=1e-300;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<1e-13)break;}
+  return 1-Math.exp(-x+a*Math.log(x)-gln)*h;}
+const chiP=(x,k)=>1-gammaP(k/2,x/2);
+const chiPdf=(x,k)=>Math.exp((k/2-1)*Math.log(x)-x/2-(k/2)*Math.log(2)-lgam(k/2));
+function chiCrit(k){let lo=0,hi=60;for(let i=0;i<70;i++){const m=(lo+hi)/2;if(chiP(m,k)>.05)lo=m;else hi=m;}return (lo+hi)/2;}
+
+/* ---------- 8. ANOVA ---------- */
+let anSeed=21,anZ=null;
+const AN_NAMES=['TCC','Mindfulness','Lista de espera'];
+function anGen(){const g=rng(anSeed);anZ=[[],[],[]];for(let i=0;i<150;i++)for(let k=0;k<3;k++)anZ[k].push(gauss(g));}
+function anRender(){
+  if(!anZ)anGen();
+  const m=[0,1,2].map(k=>+$('#an-m'+k).value),s=+$('#an-s').value,n=+$('#an-n').value;
+  [0,1,2].forEach(k=>$('#an-m'+k+'-v').textContent=m[k]);$('#an-s-v').textContent=fmt(s,1);$('#an-n-v').textContent=n;
+  const D=[0,1,2].map(k=>anZ[k].slice(0,n).map(z=>m[k]+s*z)),mk=D.map(mean),vk=D.map(vari),G=mean(mk);
+  const SSB=n*sum(mk.map(v=>(v-G)**2)),SSW=sum(vk.map(v=>(n-1)*v)),dfB=2,dfW=3*(n-1),MSB=SSB/dfB,MSW=SSW/dfW,F=MSB/MSW,p=fP(F,dfB,dfW),eta=SSB/(SSB+SSW),Fc=fCrit(dfB,dfW);
+  const cols=[css('--accent'),css('--violet'),css('--warm')],x=v=>ML+Math.min(100,Math.max(0,v))/100*(W-ML-MR);
+  let g='';
+  D.forEach((arr,k)=>{const y=52+k*58;
+    g+=txt(ML,y-27,`${AN_NAMES[k]} (M = ${fmt(mk[k],1)})`,'start','lab',cols[k]);
+    arr.forEach((val,i)=>{const j=((i*53)%13-6)*1.7;g+=`<circle cx="${x(val).toFixed(1)}" cy="${(y+j).toFixed(1)}" r="3.2" fill="${cols[k]}" fill-opacity=".5"/>`;});
+    g+=line(x(mk[k]),y-20,x(mk[k]),y+20,cols[k],3);});
+  g+=line(x(G),30,x(G),52+2*58+22,css('--ink'),1.5,'5 4')+txt(x(G)+5,24,'Média geral '+fmt(G,1),'start');
+  g+=line(ML,226,W-MR,226,css('--line'),1.5);for(let v=0;v<=100;v+=20)g+=line(x(v),226,x(v),231,css('--muted'))+txt(x(v),243,v);
+  g+=txt(W/2,259,'Escore de ansiedade','middle');
+  const Fm=Math.max(6,Math.min(30,F*1.25)),x2=v=>ML+v/Fm*(W-ML-MR),base=404,hb=92,y0=FPdf(0.001,dfB,dfW),y2=v=>base-Math.min(1.1,FPdf(Math.max(v,.001),dfB,dfW)/y0)*hb;
+  g+=txt(ML,282,`Distribuição F (gl = ${dfB} e ${dfW}) sob H₀`,'start','lab');
+  let sh=`M${x2(Fc).toFixed(1)} ${base}`;for(let v=Fc;v<=Fm+1e-9;v+=Fm/120)sh+=`L${x2(v).toFixed(1)} ${y2(v).toFixed(1)}`;
+  g+=`<path d="${sh}L${x2(Fm).toFixed(1)} ${base}Z" fill="${css('--warm')}" fill-opacity=".4"/>`;
+  let cv='';for(let v=0;v<=Fm+1e-9;v+=Fm/120)cv+=(cv?'L':'M')+x2(v).toFixed(1)+' '+y2(v).toFixed(1);
+  g+=`<path d="${cv}" fill="none" stroke="${css('--ink')}" stroke-width="2"/>`+line(ML,base,W-MR,base,css('--line'),1.5);
+  const st=Math.ceil(Fm/8);for(let v=0;v<=Fm;v+=st)g+=line(x2(v),base,x2(v),base+4,css('--muted'))+txt(x2(v),base+16,v);
+  const fo=Math.min(F,Fm-.15);
+  g+=line(x2(fo),base-hb-6,x2(fo),base,css('--violet'),3)+txt(x2(fo)+(fo>Fm*.6?-6:6),base-hb-9,'F observado = '+fmt(F,2),fo>Fm*.6?'end':'start','lab',css('--violet'));
+  g+=txt(x2(Fc)+5,base-8,'rejeição: F > '+fmt(Fc,2),'start','',css('--warm'));
+  $('#an-svg').innerHTML=g;
+  $('#an-tiles').innerHTML=
+   `<div class="tile a"><small>F (${dfB}, ${dfW})</small><b>${fmt(F,2)}</b></div>`+
+   `<div class="tile w"><small>Valor p</small><b>${fmtP(p)}</b></div>`+
+   `<div class="tile v"><small>η²</small><b>${fmt(eta,3)}</b></div>`+
+   `<div class="tile"><small>Variância explicada</small><b>${fmt(eta*100,1)}%</b></div>`;
+  $('#an-tab').innerHTML=`<tr><th>Fonte</th><th>SQ</th><th>gl</th><th>QM</th><th>F</th><th>p</th></tr>`+
+   `<tr><td>Entre grupos</td><td>${fmt(SSB,1)}</td><td>${dfB}</td><td>${fmt(MSB,1)}</td><td>${fmt(F,2)}</td><td>${fmtP(p)}</td></tr>`+
+   `<tr><td>Dentro (erro)</td><td>${fmt(SSW,1)}</td><td>${dfW}</td><td>${fmt(MSW,1)}</td><td></td><td></td></tr>`+
+   `<tr><td>Total</td><td>${fmt(SSB+SSW,1)}</td><td>${dfB+dfW}</td><td></td><td></td><td></td></tr>`;
+  const pairs=[[0,1],[0,2],[1,2]],rows=pairs.map(([a,b])=>{const df=mk[b]-mk[a],t=df/Math.sqrt(MSW*2/n),pr=tTwoP(t,dfW),pa=Math.min(1,pr*3);
+    return `<tr><td>${AN_NAMES[a]} × ${AN_NAMES[b]}</td><td>${fmt(df,1)}</td><td>${fmt(t,2)}</td><td>${fmtP(pr)}</td><td class="${pa<.05?'cell hot':''}">${fmtP(pa)}${pa<.05?' *':''}</td></tr>`;});
+  $('#an-ph').innerHTML=`<tr><th>Comparação (post hoc)</th><th>Dif. médias</th><th>t</th><th>p</th><th>p Bonferroni</th></tr>`+rows.join('');
+  const mag=eta<.01?'desprezível':eta<.06?'pequeno':eta<.14?'médio':'grande';
+  $('#an-ins').textContent=p<.05
+    ?`ANOVA significativa (p ${p<.001?'< 0,001':'= '+fmt(p,3)}): pelo menos um par de médias difere. O fator explica ${fmt(eta*100,1)}% da variância (efeito ${mag}). Veja na tabela post hoc quais pares se separam (marcados com *).`
+    :`ANOVA não significativa (p = ${fmt(p,3)}): as diferenças entre as médias cabem no que o acaso produziria com essa variação interna. Sem F significativo, não se fazem comparações post hoc.`;
+}
+['m0','m1','m2','s','n'].forEach(k=>$('#an-'+k).addEventListener('input',anRender));
+$('#an-new').onclick=()=>{anSeed=Math.floor(Math.random()*1e6)+1;anGen();anRender();};
+const anSet=(a,b,c,s,n)=>()=>{$('#an-m0').value=a;$('#an-m1').value=b;$('#an-m2').value=c;$('#an-s').value=s;$('#an-n').value=n;anRender();};
+$('#an-p0').onclick=anSet(50,50,50,12,25);$('#an-p1').onclick=anSet(46,46,56,12,25);$('#an-p2').onclick=anSet(38,48,58,12,25);
+
+/* ---------- 9. Qui-quadrado ---------- */
+function x2Render(){
+  const G=+$('#x2-g').value,n=+$('#x2-n').value,names=G===2?['TCC','Lista de espera']:['TCC','Farmacoterapia','Lista de espera'];
+  names.forEach((t,k)=>$('#x2-l'+k).textContent=t);$('#x2-w2').style.display=G===3?'flex':'none';
+  const rate=[0,1,2].map(k=>+$('#x2-r'+k).value);[0,1,2].forEach(k=>$('#x2-r'+k+'-v').textContent=rate[k]+'%');$('#x2-n-v').textContent=n;
+  const yes=names.map((_,k)=>Math.round(n*rate[k]/100)),N=n*G,Y=sum(yes),df=G-1;
+  const E=yes.map(()=>[n*Y/N,n*(N-Y)/N]),O=yes.map(y=>[y,n-y]);
+  let chi=0;const res=O.map((r,k)=>r.map((o,j)=>{const e=E[k][j];if(e===0)return 0;chi+=(o-e)**2/e;return (o-e)/Math.sqrt(e);}));
+  const p=chi<=0?1:chiP(chi,df),V=Math.sqrt(chi/N),cc=chiCrit(df),minE=Math.min(...E.flat());
+  const cols=[css('--accent'),css('--violet'),css('--warm')],x=v=>ML+v/100*(W-ML-MR);let g='';
+  names.forEach((nm,k)=>{const y=40+k*56,pr=yes[k]/n*100;
+    g+=txt(ML,y-8,`${nm}: ${yes[k]} de ${n} responderam (${fmt(pr,0)}%)`,'start','lab',cols[k]);
+    g+=`<rect x="${x(0)}" y="${y}" width="${x(100)-x(0)}" height="26" fill="${css('--line')}" fill-opacity=".7"/>`;
+    if(yes[k]>0)g+=`<rect x="${x(0)}" y="${y}" width="${x(pr)-x(0)}" height="26" fill="${cols[k]}" fill-opacity=".8"/>`;});
+  const ya=40+(G-1)*56+26;
+  g+=line(x(Y/N*100),24,x(Y/N*100),ya+6,css('--ink'),2,'5 4')+txt(x(Y/N*100)+5,18,'Taxa geral, esperada sob H₀: '+fmt(Y/N*100,0)+'%','start');
+  g+=line(ML,ya+12,W-MR,ya+12,css('--line'),1.5);for(let v=0;v<=100;v+=25)g+=line(x(v),ya+12,x(v),ya+17,css('--muted'))+txt(x(v),ya+30,v+'%');
+  const Xm=Math.min(30,Math.max(8,chi+3)),x2=v=>ML+v/Xm*(W-ML-MR),base=396,hb=92,top1=df===1?chiPdf(.1,1):.5,ys=v=>base-Math.min(1,chiPdf(v,df)/top1)*hb,st=df===1?.1:0;
+  g+=txt(ML,base-hb-22,`Distribuição χ² (gl = ${df}) sob H₀`,'start','lab');
+  let sh=`M${x2(cc).toFixed(1)} ${base}`;for(let v=cc;v<=Xm+1e-9;v+=Xm/120)sh+=`L${x2(v).toFixed(1)} ${ys(v).toFixed(1)}`;
+  g+=`<path d="${sh}L${x2(Xm).toFixed(1)} ${base}Z" fill="${css('--warm')}" fill-opacity=".4"/>`;
+  let cv='';for(let v=Math.max(st,.001);v<=Xm+1e-9;v+=Xm/120)cv+=(cv?'L':'M')+x2(v).toFixed(1)+' '+ys(v).toFixed(1);
+  g+=`<path d="${cv}" fill="none" stroke="${css('--ink')}" stroke-width="2"/>`+line(ML,base,W-MR,base,css('--line'),1.5);
+  const stp=Math.ceil(Xm/8);for(let v=0;v<=Xm;v+=stp)g+=line(x2(v),base,x2(v),base+4,css('--muted'))+txt(x2(v),base+16,v);
+  const xo=Math.min(chi,Xm-.2);g+=line(x2(xo),base-hb-8,x2(xo),base,css('--violet'),3)+txt(x2(xo)+(xo>Xm*.6?-6:6),base-hb-2,'χ² observado = '+fmt(chi,2),xo>Xm*.6?'end':'start','lab',css('--violet'));
+  g+=txt(x2(cc)+5,base-8,'rejeição: χ² > '+fmt(cc,2),'start','',css('--warm'));
+  $('#x2-svg').innerHTML=g;
+  const mag=V<.1?'desprezível':V<.3?'pequeno':V<.5?'médio':'grande';
+  $('#x2-tiles').innerHTML=
+   `<div class="tile a"><small>χ² (gl = ${df})</small><b>${fmt(chi,2)}</b></div>`+
+   `<div class="tile w"><small>Valor p</small><b>${fmtP(p)}</b></div>`+
+   `<div class="tile v"><small>V de Cramér</small><b>${fmt(V,2)}</b></div>`+
+   `<div class="tile"><small>Menor esperada</small><b>${fmt(minE,1)}</b></div>`;
+  const cell=(o,e,r)=>`<td class="cell${Math.abs(r)>=2?' hot':''}">${o}<small>E = ${fmt(e,1)} · res = ${r>=0?'+':''}${fmt(r,1)}</small></td>`;
+  $('#x2-tab').innerHTML=`<tr><th>Grupo</th><th>Respondeu</th><th>Não respondeu</th><th>Total</th></tr>`+
+   names.map((nm,k)=>`<tr><td>${nm}</td>${cell(O[k][0],E[k][0],res[k][0])}${cell(O[k][1],E[k][1],res[k][1])}<td>${n}</td></tr>`).join('')+
+   `<tr><td>Total</td><td>${Y}</td><td>${N-Y}</td><td>${N}</td></tr>`;
+  let tx=p<.05?`Há associação entre grupo e resposta (p ${p<.001?'< 0,001':'= '+fmt(p,3)}), com efeito ${mag} (V = ${fmt(V,2)}).`
+    :`Sem evidência de associação (p = ${fmt(p,3)}): as diferenças nas taxas de resposta cabem no acaso.`;
+  if(p<.05&&G===3){let bk=0,bj=0,bm=0;res.forEach((r,k)=>r.forEach((v,j)=>{if(Math.abs(v)>bm){bm=Math.abs(v);bk=k;bj=j;}}));tx+=` A maior contribuição vem de "${names[bk]}" na coluna "${bj?'Não respondeu':'Respondeu'}" (resíduo ${fmt(res[bk][bj],1)}).`;}
+  if(minE<5)tx+=' Atenção: há frequência esperada abaixo de 5, o que torna o qui-quadrado pouco confiável. Use o teste exato de Fisher.';
+  $('#x2-ins').textContent=tx;
+}
+['g','n','r0','r1','r2'].forEach(k=>$('#x2-'+k).addEventListener('input',x2Render));
+const x2Set=(g,n,a,b,c)=>()=>{$('#x2-g').value=g;$('#x2-n').value=n;$('#x2-r0').value=a;$('#x2-r1').value=b;$('#x2-r2').value=c;x2Render();};
+$('#x2-p0').onclick=x2Set(2,50,50,50,50);$('#x2-p1').onclick=x2Set(3,60,70,50,30);$('#x2-p2').onclick=x2Set(2,8,75,25,25);
+
+/* ---------- Quizzes ---------- */
+const QZ={
+ ct:[{q:'Em um grupo de pacientes, quase todos têm tempo de reação em torno de 600 ms, mas um paciente teve 2.400 ms. Qual medida descreve melhor o centro?',o:['Média','Mediana','Amplitude','Soma dos valores'],a:1,w:'A mediana não é afetada pela magnitude do valor extremo, só pela posição dele. A média seria puxada para cima por esse único caso.'},
+     {q:'Você adiciona um valor muito alto a um conjunto de dados. O que acontece?',o:['Média e mediana sobem na mesma proporção','A média sobe bastante e a mediana quase não muda','A mediana sobe e a média não muda','Nada muda'],a:1,w:'A média usa o valor de todos os casos, e a mediana depende apenas da ordem. É exatamente o que você viu ao clicar em "Adicionar valor extremo".'},
+     {q:'Qual medida de tendência central cabe para o diagnóstico principal dos pacientes de um serviço (TDAH, TEA, depressão...)?',o:['Média','Mediana','Moda','Nenhuma, ela só vale para números'],a:2,w:'Variável nominal não tem ordem nem soma com sentido. A moda indica a categoria mais frequente.'}],
+ ds:[{q:'Dois grupos têm média 50 após uma intervenção, com DP de 6 e de 16. O que se conclui?',o:['O grupo com DP 16 tem respostas mais heterogêneas','O grupo com DP 6 teve melhor resultado','Os grupos são iguais','O grupo com DP 16 tem média maior'],a:0,w:'Médias iguais não implicam grupos iguais. O DP maior indica que as pessoas se espalham mais em torno da média.'},
+     {q:'Por que a variância amostral divide a soma dos quadrados por n − 1?',o:['Para deixar o número menor','Para corrigir o viés de estimar a variância populacional a partir da amostra','Porque um dos casos é descartado','Porque a média é sempre zero'],a:1,w:'Os desvios são medidos em relação à média amostral, que já se ajusta aos dados. Dividir por n − 1 corrige a subestimação da variância da população.'},
+     {q:'Para que serve o coeficiente de variação (CV)?',o:['Para encontrar outliers','Para comparar a dispersão de variáveis com unidades ou escalas diferentes','Para medir a assimetria','Para calcular a mediana'],a:1,w:'O CV expressa o DP como porcentagem da média, o que remove a unidade de medida e permite comparar escalas distintas.'}],
+ fm:[{q:'Em uma distribuição com assimetria positiva, qual a relação entre média e mediana?',o:['Média menor que a mediana','Média igual à mediana','Média maior que a mediana','Não há relação'],a:2,w:'A cauda longa à direita puxa a média para cima, enquanto a mediana permanece mais perto do centro dos dados.'},
+     {q:'Um teste muito fácil para a amostra gera acúmulo de escores altos. Qual o nome do problema e a forma da distribuição?',o:['Efeito chão, assimetria positiva','Efeito teto, assimetria negativa','Efeito chão, assimetria negativa','Efeito teto, assimetria positiva'],a:1,w:'Quando muita gente atinge o máximo, a cauda longa fica à esquerda (assimetria negativa), e o teste perde capacidade de discriminar quem vai bem.'},
+     {q:'Uma curtose em excesso negativa (g₂ < 0) indica uma distribuição...',o:['Leptocúrtica, com caudas pesadas','Mesocúrtica, igual à normal','Platicúrtica, mais achatada, com caudas leves','Assimétrica à direita'],a:2,w:'Curtose abaixo de zero significa menos peso nas caudas e pico mais baixo que a normal, ou seja, platicúrtica.'}],
+ nc:[{q:'Um escore T de 60 corresponde a qual escore z?',o:['z = −1','z = 0','z = +1','z = +6'],a:2,w:'T = 50 + 10z. Logo z = (60 − 50) / 10 = +1.'},
+     {q:'Em uma distribuição normal, qual proporção dos casos fica entre μ − 2σ e μ + 2σ?',o:['Cerca de 68%','Cerca de 95%','Cerca de 99,7%','Cerca de 50%'],a:1,w:'A regra empírica indica 68% em ±1σ, 95% em ±2σ e 99,7% em ±3σ.'},
+     {q:'Uma pessoa com QI 85 (M = 100, DP = 15) está aproximadamente em qual percentil?',o:['2','16','50','84'],a:1,w:'QI 85 corresponde a z = −1. Cerca de 16% da população pontua abaixo de 1 DP da média.'}],
+ co:[{q:'Duas variáveis têm r = 0,50. Qual proporção da variância é compartilhada?',o:['50%','25%','5%','75%'],a:1,w:'A variância compartilhada é r². Como 0,50² = 0,25, são 25%.'},
+     {q:'O consumo de sorvete se correlaciona com afogamentos. Qual conclusão é adequada?',o:['Sorvete causa afogamento','Afogamentos aumentam o consumo de sorvete','Uma terceira variável, como o calor, pode explicar ambos','As variáveis são independentes'],a:2,w:'Correlação não implica causalidade. Variáveis de confusão podem gerar associações sem relação causal direta.'},
+     {q:'Qual coeficiente é mais indicado para dados ordinais ou com outliers influentes?',o:['Pearson','Spearman','Qui-quadrado','Coeficiente de variação'],a:1,w:'O Spearman trabalha com postos, então é robusto a valores extremos e adequado para escalas ordinais.'}],
+ cm:[{q:'Em um teste t, p = 0,03. Qual interpretação está correta?',o:['A probabilidade de H₀ ser verdadeira é 3%','Se não houvesse diferença real, observar uma diferença tão grande seria raro (cerca de 3%)','O efeito é grande','A hipótese alternativa é verdadeira com 97% de certeza'],a:1,w:'O valor p é calculado supondo H₀ verdadeira. Ele não é a probabilidade de H₀ nem mede o tamanho do efeito.'},
+     {q:'Com n muito grande, o teste deu p < 0,001, mas d = 0,10. O que concluir?',o:['O efeito é grande e importante','Estatisticamente significativo, mas com efeito pequeno','O resultado não pode estar certo','O estudo não tem poder'],a:1,w:'O valor p depende muito de n. Por isso é preciso relatar também o tamanho de efeito (d) e discutir a relevância clínica.'},
+     {q:'O IC 95% da diferença entre médias é de −1 a 9. O que isso indica?',o:['Diferença significativa a 5%','Diferença não significativa a 5%, pois o intervalo inclui zero','O efeito é negativo','O n foi insuficiente em qualquer caso'],a:1,w:'Se o intervalo inclui 0, um valor nulo é compatível com os dados, então p > 0,05.'}],
+ rg:[{q:'Em uma regressão, b₁ = 1,2 para sessões de terapia e redução de pontos no BDI-II. Como interpretar?',o:['Cada sessão adicional se associa a 1,2 ponto a mais de redução prevista','A terapia reduz 1,2% dos sintomas','1,2 é a correlação','A redução mínima é 1,2 ponto'],a:0,w:'A inclinação é a mudança prevista em Y para cada aumento de uma unidade em X.'},
+     {q:'Se R² = 0,36, o que isso significa?',o:['A correlação é 0,36','36% da variância de Y é explicada por X','36% das previsões estão corretas','O modelo erra 36%'],a:1,w:'R² é a proporção da variância de Y explicada pelo modelo. Aqui, r = √0,36 = 0,60.'},
+     {q:'Usar a equação para prever Y em um valor de X muito fora da faixa observada é...',o:['Sempre seguro','Uma extrapolação, que pode ser enganosa','Obrigatório','Melhor que interpolar'],a:1,w:'Não sabemos se a relação linear se mantém fora da faixa observada. Por isso extrapolar é arriscado.'}],
+ an:[{q:'Por que usar ANOVA em vez de vários testes t entre três grupos?',o:['Porque o teste t não funciona com amostras grandes','Para controlar a inflação do erro tipo I em comparações múltiplas','Porque a ANOVA ignora a variância','Porque a ANOVA é sempre mais poderosa'],a:1,w:'Cada teste t extra aumenta a chance de falso positivo. A ANOVA faz um teste global único com α controlado.'},
+     {q:'Um F grande na ANOVA indica que...',o:['A variância dentro dos grupos é muito maior que a entre grupos','A variância entre grupos é grande em relação à variância dentro dos grupos','Todos os grupos têm a mesma média','O n é pequeno'],a:1,w:'F = QM entre / QM dentro. Valores altos sugerem que as médias se afastam mais do que o acaso explicaria.'},
+     {q:'A ANOVA foi significativa. Qual o próximo passo?',o:['Concluir que todos os grupos diferem','Realizar comparações post hoc (Bonferroni, Tukey) para ver quais pares diferem','Repetir a ANOVA com mais grupos','Nada, a análise terminou'],a:1,w:'O F global só diz que pelo menos um par difere. Os testes post hoc identificam quais.'}],
+ x2:[{q:'O qui-quadrado de independência serve para testar...',o:['Diferença entre duas médias','Associação entre duas variáveis categóricas','Correlação entre duas variáveis contínuas','Normalidade dos dados'],a:1,w:'Ele compara frequências observadas com as esperadas sob independência entre duas variáveis categóricas.'},
+     {q:'Qual o número de graus de liberdade em uma tabela 2 × 3?',o:['1','2','3','6'],a:1,w:'gl = (linhas − 1) × (colunas − 1) = (2 − 1) × (3 − 1) = 2.'},
+     {q:'Várias células têm frequência esperada menor que 5. O que fazer?',o:['Ignorar, nada muda','Usar o teste exato de Fisher ou agrupar categorias','Usar o teste t','Aumentar o α'],a:1,w:'Com E baixo, a aproximação pela distribuição qui-quadrado é ruim. O teste exato de Fisher não depende dela.'}]
+};
+function buildQuiz(key){
+  const Q=QZ[key],box=document.createElement('div');box.className='card quiz';box.id='quiz-'+key;$('#p-'+key).appendChild(box);
+  let i=0,score=0;
+  const draw=()=>{
+    if(i>=Q.length){
+      box.innerHTML=`<h2>Quiz do módulo: resultado</h2><p class="qq">Você acertou ${score} de ${Q.length}.</p><p class="sub">${score===Q.length?'Excelente! Passe para o próximo módulo.':score>=Q.length-1?'Bom resultado. Revise as definições do ponto que errou e teste os controles.':'Vale rever as definições e brincar com o simulador antes de refazer.'}</p><button class="btn" id="rq-${key}">Refazer quiz</button>`;
+      $('#rq-'+key).onclick=()=>{i=0;score=0;draw();};return;}
+    const q=Q[i];
+    box.innerHTML=`<h2>Quiz do módulo <span class="chip">${i+1} de ${Q.length}</span></h2><p class="qq">${q.q}</p><div>${q.o.map((t,j)=>`<button class="btn qopt" data-j="${j}">${t}</button>`).join('')}</div><div class="qf" aria-live="polite"></div>`;
+    box.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{
+      const j=+b.dataset.j,ok=j===q.a;if(ok)score++;
+      box.querySelectorAll('.qopt').forEach((c,k)=>{c.disabled=true;if(k===q.a)c.classList.add('ok');else if(k===j)c.classList.add('bad');});
+      box.querySelector('.qf').innerHTML=`<p class="insight ${ok?'':'wrong'}"><b>${ok?'✓ Correto.':'✗ Não foi dessa vez. Resposta: '+q.o[q.a]+'.'}</b> ${q.w}</p><button class="btn" id="nq-${key}">${i+1<Q.length?'Próxima pergunta':'Ver resultado'}</button>`;
+      $('#nq-'+key).onclick=()=>{i++;draw();};$('#nq-'+key).focus();
+    });
+  };
+  draw();
+}
+
+/* ---------- 10. Mapa de decisão ---------- */
+function dmDecide(){
+  const goal=$('#dm-goal').value;
+  if(goal==='rel'){const r=$('#dm-rel').value;
+    if(r==='nn')return ['Correlação de Pearson','Mede a força e a direção da relação linear entre duas variáveis numéricas.','Relação aproximadamente linear, sem outliers influentes, observações independentes.','co'];
+    if(r==='pred')return ['Regressão linear simples','Estima quanto o desfecho muda a cada unidade do preditor e quanta variância é explicada (R²).','Relação linear, resíduos aproximadamente normais e de variância constante, observações independentes.','rg'];
+    if(r==='ord')return ['Correlação de Spearman','Correlaciona os postos, por isso funciona com dados ordinais e resiste a outliers.','Relação monotônica (sempre crescente ou sempre decrescente).','co'];
+    return ['Qui-quadrado de independência','Verifica se duas variáveis categóricas estão associadas, comparando frequências observadas e esperadas.','Frequências esperadas de pelo menos 5 na maioria das células. Com menos, use o teste exato de Fisher.','x2'];}
+  const out=$('#dm-out').value,k=$('#dm-grp').value,pair=$('#dm-dsg').value==='par';
+  if(out==='cat'){
+    if(!pair)return ['Qui-quadrado de independência','Compara as proporções do desfecho categórico entre grupos independentes.','Frequências esperadas de pelo menos 5. Com menos, use o teste exato de Fisher.','x2'];
+    return k==='2'?['Teste de McNemar','Compara proporções do mesmo grupo em dois momentos, com desfecho dicotômico.','Dados pareados e desfecho com duas categorias.',null]:['Q de Cochran','Generaliza o McNemar para três ou mais momentos com desfecho dicotômico.','Dados pareados e desfecho com duas categorias.',null];}
+  const np=out==='ord'||$('#dm-norm').value==='non';
+  if(k==='2'){
+    if(!pair)return np?['Teste de Mann-Whitney','Compara dois grupos independentes pelos postos, sem exigir normalidade.','Observações independentes e formas de distribuição semelhantes entre grupos.',null]:['Teste t de Welch (amostras independentes)','Compara duas médias sem exigir variâncias iguais. É a opção segura por padrão.','Observações independentes e desfecho aproximadamente normal em cada grupo.','cm'];
+    return np?['Teste de Wilcoxon (postos sinalizados)','Compara dois momentos das mesmas pessoas pelos postos das diferenças.','Dados pareados. A distribuição das diferenças deve ser aproximadamente simétrica.',null]:['Teste t pareado','Compara a média das diferenças entre dois momentos das mesmas pessoas. Mesma lógica de H₀, p, d e IC do módulo 7.','Dados pareados e diferenças aproximadamente normais.','cm'];}
+  if(!pair)return np?['Teste de Kruskal-Wallis','Extensão do Mann-Whitney para três ou mais grupos independentes. Se significativo, faça comparações post hoc (Dunn).','Observações independentes.',null]:['ANOVA de um fator','Compara três ou mais médias de grupos independentes sem inflar o erro tipo I. Se significativa, siga com post hoc.','Independência, resíduos aproximadamente normais e variâncias semelhantes (Levene).','an'];
+  return np?['Teste de Friedman','Compara três ou mais momentos das mesmas pessoas pelos postos.','Dados pareados.',null]:['ANOVA de medidas repetidas','Compara a média de três ou mais momentos nas mesmas pessoas, separando a variação entre pessoas.','Esfericidade (teste de Mauchly), com correção de Greenhouse-Geisser se violada.',null];}
+function dmRender(){
+  const goal=$('#dm-goal').value,out=$('#dm-out').value;
+  $('#dm-w-out').style.display=goal==='cmp'?'flex':'none';$('#dm-w-cmp').style.display=goal==='cmp'?'flex':'none';
+  $('#dm-w-rel').style.display=goal==='rel'?'flex':'none';$('#dm-w-norm').style.display=out==='num'?'flex':'none';
+  const [nome,why,cond,mod]=dmDecide();
+  $('#dm-res').innerHTML=`<small>Teste indicado</small><h3>${nome}</h3><p style="margin:0 0 6px">${why}</p><p style="margin:0"><b>Condições:</b> ${cond}</p>`+
+    (mod?`<button class="btn" id="dm-go" style="margin-top:10px">Abrir o módulo correspondente</button>`:`<p class="sub" style="margin:8px 0 0">Este teste não tem simulador próprio nesta versão.</p>`);
+  if(mod)$('#dm-go').onclick=()=>{$('#t-'+mod).click();window.scrollTo({top:0});};
+}
+['goal','out','rel','grp','dsg','norm'].forEach(k=>$('#dm-'+k).addEventListener('input',dmRender));
+QZ.dm=[
+ {q:'Você quer comparar o escore (aproximadamente normal) de dois grupos de pessoas diferentes. Qual teste?',o:['Qui-quadrado','Teste t de Welch','McNemar','Correlação de Spearman'],a:1,w:'Desfecho numérico, dois grupos independentes e distribuição aproximadamente normal levam ao teste t. O Welch dispensa a suposição de variâncias iguais.'},
+ {q:'Os mesmos pacientes foram medidos antes e depois. O escore é muito assimétrico e o n é pequeno. Qual teste?',o:['t para amostras independentes','Wilcoxon','ANOVA de um fator','Qui-quadrado'],a:1,w:'Dados pareados pedem teste pareado. Como a distribuição não é adequada para o t, usa-se a alternativa não paramétrica, o Wilcoxon.'},
+ {q:'Você quer saber se o diagnóstico (categórico) se associa ao sexo (categórico). Qual teste?',o:['Correlação de Pearson','ANOVA','Qui-quadrado de independência','Regressão linear'],a:2,w:'Duas variáveis categóricas se analisam com tabela de contingência e qui-quadrado (ou Fisher, se as frequências esperadas forem baixas).'}
+];
+const BN={
+ ct:['Bloco 1 · Descrever uma variável','nenhum pré-requisito.'],
+ ds:['Bloco 1 · Descrever uma variável','média e mediana (módulo 1).'],
+ fm:['Bloco 1 · Descrever uma variável','tendência central e dispersão (módulos 1 e 2).'],
+ nc:['Bloco 1 · Descrever uma variável','média, desvio padrão e forma da distribuição (módulos 1 a 3).'],
+ co:['Bloco 2 · Relacionar duas variáveis','média, desvio padrão e escore z (módulos 1, 2 e 4).'],
+ rg:['Bloco 2 · Relacionar duas variáveis','correlação (módulo 5): aqui b₁ = r · s_y / s_x e R² = r².'],
+ cm:['Bloco 3 · Inferência e comparação de grupos','dispersão e curva normal (módulos 2 e 4) e a ideia de efeito dos módulos 5 e 6.'],
+ an:['Bloco 3 · Inferência e comparação de grupos','teste t, H₀ e valor p (módulo 7).'],
+ x2:['Bloco 3 · Inferência e comparação de grupos','a lógica de H₀ e do valor p (módulo 7).'],
+ dm:['Fechamento','todos os módulos anteriores.']
+};
+function setBN(k){$('#bn').innerHTML=`<b>${BN[k][0]}.</b> Antes de começar, você precisa dominar: ${BN[k][1]}`;}
+tabs.forEach(b=>b.addEventListener('click',()=>setBN(b.dataset.p)));
+Object.keys(QZ).forEach(buildQuiz);
+
+function renderAll(){ctRender();dsRender();fmRender();ncRender();coRender();cmRender();rgRender();anRender();x2Render();dmRender();}
+ncSetup();rgLoad();renderAll();setBN('ct');
+new MutationObserver(renderAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',renderAll);
+</script>
+</body>
+</html>
