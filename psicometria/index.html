@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório Interativo de Psicometria</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1d2530;--muted:#586373;--line:#dedad1;--soft:#eef3f6;--accent:#1f5f8b;--accent-ink:#fff;--c1:#1f6fa8;--c2:#cf6a2b;--c3:#2c8a5f;--c4:#7a5aa6;--good:#1f7a52;--bad:#b23b2b;--warn:#8f5f00;--shadow:0 1px 2px rgba(20,30,40,.06),0 4px 14px rgba(20,30,40,.05)}
+@media (prefers-color-scheme:dark){:root{--bg:#12161b;--card:#1b2129;--ink:#e9edf1;--muted:#9eaab8;--line:#303a46;--soft:#202833;--accent:#6bb3df;--accent-ink:#0d1a24;--c1:#62aee0;--c2:#ee9560;--c3:#5fc79a;--c4:#b79ce3;--good:#62c79a;--bad:#f08a7a;--warn:#e3b25a;--shadow:none}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+h1,h2,h3{line-height:1.25;margin:0 0 .5em}
+h2{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:1.6rem;font-weight:600}
+h3{font-size:1.05rem}
+p{margin:0 0 .8em}
+a{color:var(--accent)}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line);min-height:49px}
+#menuBtn{font:inherit;font-size:.9rem;padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
+.brand{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.brand b{font-family:Georgia,serif;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand span{font-size:.74rem;color:var(--muted)}
+.prog{margin-left:auto;font-size:.8rem;color:var(--muted);white-space:nowrap}
+@media(max-width:600px){.prog{display:none}.brand b{white-space:normal;font-size:.95rem}.brand span{display:none}}
+.shell{max-width:1180px;margin:0 auto}
+nav{position:fixed;top:49px;bottom:0;left:0;width:min(86vw,330px);background:var(--card);overflow:auto;padding:12px 14px 40px;transform:translateX(-102%);transition:transform .2s;z-index:15;border-right:1px solid var(--line)}
+nav.open{transform:none}
+main{padding:18px 14px 40px;outline:none;min-width:0}
+@media(min-width:960px){.shell{display:grid;grid-template-columns:272px minmax(0,1fr);gap:6px}nav{position:sticky;top:49px;height:calc(100vh - 49px);transform:none;width:auto;align-self:start}#menuBtn{display:none}main{padding:26px 28px 56px}}
+.nu{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
+.nb{display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;font:inherit;font-size:.9rem;padding:8px 9px;border:0;background:none;color:var(--ink);border-radius:9px;cursor:pointer;line-height:1.3}
+.nb:hover{background:var(--soft)}
+.nb[aria-current=page]{background:var(--soft);box-shadow:inset 3px 0 0 var(--accent);font-weight:600}
+.nb .n{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:.72rem;color:var(--muted)}
+.nb .n.v{border-color:var(--accent);color:var(--accent)}
+.nb .n.d{background:var(--good);border-color:var(--good);color:#fff}
+.kicker{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.lead{font-size:1.04rem;color:var(--ink);max-width:70ch}
+.pre{font-size:.86rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px;margin:10px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0;box-shadow:var(--shadow)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:4px 20px;margin-bottom:8px}
+.ctl{display:block;margin:0 0 10px}
+.cl{display:flex;justify-content:space-between;gap:8px;font-size:.88rem;margin-bottom:2px}
+.cv{font-variant-numeric:tabular-nums;color:var(--accent)}
+input[type=range]{width:100%;height:30px;accent-color:var(--accent);margin:0}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer}
+.chk input{margin-top:.28em;width:18px;height:18px;accent-color:var(--accent)}
+.rrow{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.86rem;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;background:var(--card)}
+.pill:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pill input{position:absolute;opacity:0;width:0;height:0}
+.pill:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-size:.88rem;padding:7px 13px;border-radius:9px;border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--accent);color:var(--accent-ink)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 10px}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px;margin-top:6px}
+.cbox{min-width:0}
+.cap{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+.read{margin-top:12px;padding:10px 12px;border-left:3px solid var(--accent);background:var(--soft);border-radius:0 10px 10px 0;font-size:.93rem}
+.read b{font-variant-numeric:tabular-nums}
+.exp li{margin:.35em 0}
+.defs dt{font-weight:600;margin-top:.7em}
+.defs dd{margin:.1em 0 0 0}
+.fx{font-family:Georgia,"Times New Roman",serif;font-style:italic;background:var(--soft);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.apa{font-size:.95rem;background:var(--soft);border-radius:10px;padding:12px 14px}
+.scroll{overflow-x:auto}
+.defs pre{background:var(--soft);border-radius:10px;padding:10px 12px;overflow-x:auto;font-size:.8rem;line-height:1.45;margin:.4em 0 0}.defs code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{font-weight:600;color:var(--muted);font-size:.78rem}
+.tbl .hl{font-weight:700}
+.tbl .dim{color:var(--muted)}
+.ok{color:var(--good);font-weight:600}.no{color:var(--bad);font-weight:600}.wr{color:var(--warn);font-weight:600}
+.quiz .q{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--card)}
+.quiz .qq{font-weight:600;margin-bottom:8px}
+.opt{display:block;width:100%;text-align:left;font:inherit;font-size:.93rem;padding:9px 11px;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){background:var(--soft)}
+.opt.right{border-color:var(--good);box-shadow:inset 4px 0 0 var(--good)}
+.opt.wrong{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.opt:disabled{cursor:default;color:var(--ink)}
+.fb{font-size:.9rem;margin-top:8px;padding:8px 10px;border-radius:9px;background:var(--soft)}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card)}
+.tile b{display:block;margin-bottom:4px}
+footer{max-width:1180px;margin:0 auto;padding:18px 16px 30px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line)}
+.chart{display:block;width:100%;height:auto;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1.2}
+.chart .tick{stroke:var(--muted)}
+.chart .tl{fill:var(--muted);font-size:11px}
+.chart .at{fill:var(--ink);font-size:12px}
+.chart .lb{fill:var(--ink);font-size:11.5px}
+.chart .lb2{fill:var(--muted);font-size:11px}
+.chart .ln{fill:none;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.chart .ref{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 4}
+.chart .ref2{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:2 3;opacity:.6}
+.chart .s1{stroke:var(--c1)}.chart .s2{stroke:var(--c2)}.chart .s3{stroke:var(--c3)}.chart .s4{stroke:var(--c4)}
+.chart .f1{fill:var(--c1)}.chart .f2{fill:var(--c2)}.chart .f3{fill:var(--c3)}.chart .f4{fill:var(--c4)}
+.chart .dash{stroke-dasharray:7 4}.chart .dash2{stroke-dasharray:2 4}
+.chart .thin{stroke-width:1.4}.chart .thick{stroke-width:3.4}
+.chart .ar{fill-opacity:.22;stroke:none}
+.chart .faint{fill-opacity:.5}
+.chart .dt{stroke:var(--card);stroke-width:.6}
+.chart .hv{fill:var(--ink);stroke:var(--card);stroke-width:2.4px;paint-order:stroke;font-size:9.5px}
+.chart .hl{fill:var(--ink);font-size:10.5px}
+.chart .cell{stroke:var(--card);stroke-width:1}
+.chart .bar{stroke:none}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top">
+<button id="menuBtn" aria-expanded="false" aria-controls="nav">☰ Módulos</button>
+<a href="/" class="homelink" style="font-size:.85rem;text-decoration:none;white-space:nowrap" title="Página inicial">← Início</a>
+<div class="brand"><b>Laboratório Interativo de Psicometria</b><span>Validação de escalas e testes</span></div>
+<div class="prog" id="prog" aria-live="polite"></div>
+</header>
+<div class="shell">
+<nav id="nav" aria-label="Módulos"></nav>
+<main id="main" tabindex="-1"></main>
+</div>
+<footer><p style="margin:0 0 6px">Laboratório Interativo de Psicometria · Criação, concepção didática e autoria: Prof. Dr. Tauily Claussen D'Escragnolle Taunay · © 2026. Todos os direitos reservados.</p>
+<p style="margin:0 0 6px">É permitido o uso em sala de aula e o estudo individual. Reprodução, modificação, redistribuição ou uso comercial, no todo ou em parte, dependem de autorização prévia e expressa do autor. Ao citar, referencie o autor e o nome da ferramenta.</p>
+<p style="margin:0">Ferramenta didática; todos os dados são simulados (fictícios). Seu progresso fica salvo apenas neste navegador.</p></footer>
+<script>
+/* ===== MOTOR ESTATÍSTICO (sem DOM) ===== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function makeNormals(n,k,seed){const r=mulberry32(seed);const Z=[];for(let i=0;i<n;i++){const row=[];for(let j=0;j<k;j+=2){const u=r()||1e-12,v=r(),m=Math.sqrt(-2*Math.log(u));row.push(m*Math.cos(2*Math.PI*v));if(j+1<k)row.push(m*Math.sin(2*Math.PI*v));}Z.push(row);}return Z;}
+const _zc={};
+function getZ(seed,n,k){const key=seed+'_'+n+'_'+k;return _zc[key]||(_zc[key]=makeNormals(n,k,seed));}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const sum=a=>a.reduce((s,x)=>s+x,0);
+const mean=a=>sum(a)/a.length;
+const vari=a=>{const m=mean(a);return sum(a.map(x=>(x-m)*(x-m)))/(a.length-1)};
+const sd=a=>Math.sqrt(vari(a));
+function stdz(a){const m=mean(a),s=sd(a);return a.map(x=>(x-m)/s);}
+function cor(x,y){const mx=mean(x),my=mean(y);let sxy=0,sxx=0,syy=0;for(let i=0;i<x.length;i++){const a=x[i]-mx,b=y[i]-my;sxy+=a*b;sxx+=a*a;syy+=b*b;}return sxy/Math.sqrt(sxx*syy);}
+function col(X,j){return X.map(r=>r[j]);}
+function skew(a){const m=mean(a),s=sd(a),n=a.length;return sum(a.map(x=>((x-m)/s)**3))*n/((n-1)*(n-2));}
+function corMat(X){const p=X[0].length,cols=[];for(let j=0;j<p;j++)cols.push(col(X,j));const R=Array.from({length:p},()=>new Array(p).fill(1));for(let i=0;i<p;i++)for(let j=i+1;j<p;j++){R[i][j]=R[j][i]=cor(cols[i],cols[j]);}return R;}
+const Tr=A=>A[0].map((_,j)=>A.map(r=>r[j]));
+function mmul(A,B){const n=A.length,m=B[0].length,k=B.length,C=[];for(let i=0;i<n;i++){const r=new Array(m).fill(0);for(let l=0;l<k;l++){const a=A[i][l];if(a)for(let j=0;j<m;j++)r[j]+=a*B[l][j];}C.push(r);}return C;}
+function chol(R){const p=R.length,L=Array.from({length:p},()=>new Array(p).fill(0));for(let i=0;i<p;i++)for(let j=0;j<=i;j++){let s=R[i][j];for(let k=0;k<j;k++)s-=L[i][k]*L[j][k];if(i===j)L[i][i]=Math.sqrt(Math.max(s,1e-9));else L[i][j]=s/L[j][j];}return L;}
+function sampleFromR(R,n,Z){const L=chol(R),p=R.length,X=[];for(let i=0;i<n;i++){const z=Z[i],row=new Array(p).fill(0);for(let a=0;a<p;a++){let s=0;for(let b=0;b<=a;b++)s+=L[a][b]*z[b];row[a]=s;}X.push(row);}return X;}
+function invLogDet(A){const n=A.length,M=A.map((r,i)=>r.concat(Array.from({length:n},(_,j)=>i===j?1:0)));let ld=0;for(let c=0;c<n;c++){let piv=c;for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[piv][c]))piv=r;if(Math.abs(M[piv][c])<1e-12)return{inv:null,logdet:-Infinity};if(piv!==c){const t=M[piv];M[piv]=M[c];M[c]=t;}const d=M[c][c];ld+=Math.log(Math.abs(d));for(let j=0;j<2*n;j++)M[c][j]/=d;for(let r=0;r<n;r++)if(r!==c){const f=M[r][c];if(f!==0)for(let j=0;j<2*n;j++)M[r][j]-=f*M[c][j];}}return{inv:M.map(r=>r.slice(n)),logdet:ld};}
+function eigenSym(A0){const n=A0.length,A=A0.map(r=>r.slice()),V=Array.from({length:n},(_,i)=>{const r=new Array(n).fill(0);r[i]=1;return r;});for(let sw=0;sw<60;sw++){let off=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)off+=A[i][j]*A[i][j];if(off<1e-22)break;for(let p=0;p<n-1;p++)for(let q=p+1;q<n;q++){if(Math.abs(A[p][q])<1e-15)continue;const th=(A[q][q]-A[p][p])/(2*A[p][q]);const t=(th>=0?1:-1)/(Math.abs(th)+Math.sqrt(th*th+1));const c=1/Math.sqrt(t*t+1),s=t*c;for(let k=0;k<n;k++){const a=A[k][p],b=A[k][q];A[k][p]=c*a-s*b;A[k][q]=s*a+c*b;}for(let k=0;k<n;k++){const a=A[p][k],b=A[q][k];A[p][k]=c*a-s*b;A[q][k]=s*a+c*b;}for(let k=0;k<n;k++){const a=V[k][p],b=V[k][q];V[k][p]=c*a-s*b;V[k][q]=s*a+c*b;}}}const vals=A.map((r,i)=>r[i]);const idx=vals.map((_,i)=>i).sort((a,b)=>vals[b]-vals[a]);return{values:idx.map(i=>vals[i]),vectors:idx.map(i=>V.map(r=>r[i]))};}
+/* distribuições */
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+0.3275911*x);const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+const normCdf=x=>0.5*(1+erf(x/Math.SQRT2));
+const normPdf=x=>Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);
+function lgamma(z){const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lgamma(1-z);z-=1;let x=c[0];for(let i=1;i<9;i++)x+=c[i]/(z+i);const t=z+7.5;return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(t)-t+Math.log(x);}
+function gammaP(a,x){if(x<=0)return 0;if(x<a+1){let ap=a,del=1/a,s=del;for(let n=0;n<400;n++){ap++;del*=x/ap;s+=del;if(Math.abs(del)<Math.abs(s)*1e-13)break;}return s*Math.exp(-x+a*Math.log(x)-lgamma(a));}let b=x+1-a,c=1e300,d=1/b,h=d;for(let i=1;i<400;i++){const an=-i*(i-a);b+=2;d=an*d+b;if(Math.abs(d)<1e-300)d=1e-300;c=b+an/c;if(Math.abs(c)<1e-300)c=1e-300;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<1e-13)break;}return 1-Math.exp(-x+a*Math.log(x)-lgamma(a))*h;}
+const chi2sf=(x,df)=>df<=0?NaN:1-gammaP(df/2,x/2);
+/* fidedignidade */
+function cronbach(X){const k=X[0].length,cols=[];for(let j=0;j<k;j++)cols.push(col(X,j));const vt=vari(X.map(r=>sum(r)));const vs=sum(cols.map(vari));return k/(k-1)*(1-vs/vt);}
+function itemStats(X){const k=X[0].length,n=X.length,tot=X.map(r=>sum(r)),out=[];for(let j=0;j<k;j++){const c=col(X,j);const rest=tot.map((t,i)=>t-c[i]);const Xd=X.map(r=>r.filter((_,q)=>q!==j));out.push({m:mean(c),s:sd(c),sk:skew(c),rit:cor(c,rest),aDel:cronbach(Xd)});}return out;}
+function meanOffDiag(R){const p=R.length;let s=0,c=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)if(i!==j){s+=R[i][j];c++;}return s/c;}
+/* análise fatorial */
+function paf(R,m,iter=100){const p=R.length;const {inv}=invLogDet(R);let h=inv?R.map((_,i)=>clamp(1-1/inv[i][i],.05,.99)):new Array(p).fill(.5);let L;for(let it=0;it<iter;it++){const Rr=R.map((r,i)=>r.map((v,j)=>i===j?h[i]:v));const e=eigenSym(Rr);L=[];for(let i=0;i<p;i++){const row=[];for(let k=0;k<m;k++)row.push(e.vectors[k][i]*Math.sqrt(Math.max(e.values[k],0)));L.push(row);}const hn=L.map(r=>Math.min(.995,sum(r.map(v=>v*v))));const dl=Math.max(...hn.map((v,i)=>Math.abs(v-h[i])));h=hn;if(dl<1e-6)break;}return{L,h};}
+function varimax(L0,iter=200){const p=L0.length,m=L0[0].length;const A=L0.map(r=>r.slice());if(m<2)return A;for(let it=0;it<iter;it++){let mx=0;for(let a=0;a<m-1;a++)for(let b=a+1;b<m;b++){let sA=0,sB=0,sC=0,sD=0;for(let i=0;i<p;i++){const x=A[i][a],y=A[i][b],u=x*x-y*y,v=2*x*y;sA+=u;sB+=v;sC+=u*u-v*v;sD+=2*u*v;}const ang=Math.atan2(sD-2*sA*sB/p,sC-(sA*sA-sB*sB)/p)/4;mx=Math.max(mx,Math.abs(ang));const c=Math.cos(ang),s=Math.sin(ang);for(let i=0;i<p;i++){const x=A[i][a],y=A[i][b];A[i][a]=c*x+s*y;A[i][b]=-s*x+c*y;}}if(mx<1e-7)break;}return A;}
+function promax(Lv,kappa=4){const Q=Lv.map(r=>r.map(v=>Math.sign(v)*Math.pow(Math.abs(v),kappa)));const LtL=mmul(Tr(Lv),Lv);const U=mmul(invLogDet(LtL).inv,mmul(Tr(Lv),Q));const dd=invLogDet(mmul(Tr(U),U)).inv;const Un=U.map(r=>r.map((v,j)=>v*Math.sqrt(dd[j][j])));const P=mmul(Lv,Un);const Ui=invLogDet(Un).inv;const Phi=mmul(Ui,Tr(Ui));return{P,Phi};}
+function tidyLoad(L,Phi){const m=L[0].length;const A=L.map(r=>r.slice());const sg=[],ss=[];for(let k=0;k<m;k++){let s=0,t=0;A.forEach(r=>{s+=r[k];t+=r[k]*r[k];});sg.push(s<0?-1:1);ss.push(t);}A.forEach(r=>{for(let k=0;k<m;k++)r[k]*=sg[k];});const ord=ss.map((_,i)=>i).sort((a,b)=>ss[b]-ss[a]);const L2=A.map(r=>ord.map(k=>r[k]));let P2=null;if(Phi)P2=ord.map(a=>ord.map(b=>Phi[a][b]*sg[a]*sg[b]));return{L:L2,Phi:P2};}
+const _pac={};
+function parallelAnalysis(n,p,reps=500){const key=n+'_'+p;if(_pac[key])return _pac[key];const all=[];for(let r=0;r<reps;r++){const X=makeNormals(n,p,9000+r);all.push(eigenSym(corMat(X)).values);}const out=[];for(let k=0;k<p;k++){const v=all.map(e=>e[k]).sort((a,b)=>a-b);out.push(v[Math.floor(.95*(reps-1))]);}return _pac[key]=out;}
+function kmo(R){const p=R.length,{inv}=invLogDet(R);if(!inv)return NaN;let sr=0,sp=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)if(i!==j){sr+=R[i][j]**2;const q=-inv[i][j]/Math.sqrt(inv[i][i]*inv[j][j]);sp+=q*q;}return sr/(sr+sp);}
+function bartlett(R,n){const p=R.length,ld=invLogDet(R).logdet;const chi=-(n-1-(2*p+5)/6)*ld,df=p*(p-1)/2;return{chi,df,p:chi2sf(chi,df)};}
+function signFix(lam,phi,fac,twoF){const nf=twoF?2:1,sg=[];for(let f=0;f<nf;f++){let t=0;lam.forEach((v,i)=>{if(fac[i]===f)t+=v;});sg.push(t<0?-1:1);}return{lam:lam.map((v,i)=>v*sg[fac[i]]),phi:twoF?phi*sg[0]*sg[1]:phi};}
+const penB=th=>{let s=0;th.forEach(v=>{const e=Math.abs(v)-.99;if(e>0)s+=1e3*e*e;});return s;};
+function bfgsR(f,x0,maxit){let r=bfgs(f,x0,maxit||150);for(let k=0;k<4;k++){const r2=bfgs(f,r.x,maxit||150);const gain=r.f-r2.f;if(r2.f<r.f)r=r2;if(gain<1e-12)break;}return r;}
+/* AFC por máxima verossimilhança (modelo padronizado, estrutura simples) */
+function numGrad(f,x,h=1e-6){const g=[];for(let i=0;i<x.length;i++){const a=x.slice(),b=x.slice();a[i]+=h;b[i]-=h;g.push((f(a)-f(b))/(2*h));}return g;}
+function bfgs(f,x0,maxit=150){const n=x0.length;let x=x0.slice(),fx=f(x),g=numGrad(f,x);let H=Array.from({length:n},(_,i)=>{const r=new Array(n).fill(0);r[i]=1;return r;});for(let it=0;it<maxit;it++){let d=H.map(r=>-r.reduce((s,v,j)=>s+v*g[j],0));let gd=d.reduce((s,v,i)=>s+v*g[i],0);if(gd>=0){H=H.map((r,i)=>r.map((_,j)=>i===j?1:0));d=g.map(v=>-v);gd=-g.reduce((s,v)=>s+v*v,0);}let t=(it===0)?Math.min(1,.2/Math.sqrt(d.reduce((q,v)=>q+v*v,0)||1)):1,xn=x,fnv=fx,ok=false;for(let ls=0;ls<40;ls++){xn=x.map((v,i)=>v+t*d[i]);fnv=f(xn);if(fnv<=fx+1e-4*t*gd){ok=true;break;}t/=2;}if(!ok)break;const gn=numGrad(f,xn);const s=xn.map((v,i)=>v-x[i]),y=gn.map((v,i)=>v-g[i]);const sy=s.reduce((a,v,i)=>a+v*y[i],0);if(sy>1e-12){const rho=1/sy,Hy=H.map(r=>r.reduce((a,v,j)=>a+v*y[j],0));const yHy=y.reduce((a,v,i)=>a+v*Hy[i],0);for(let i=0;i<n;i++)for(let j=0;j<n;j++)H[i][j]+=(1+yHy*rho)*rho*s[i]*s[j]-rho*(Hy[i]*s[j]+s[i]*Hy[j]);}const conv=Math.abs(fx-fnv)<1e-13;x=xn;fx=fnv;g=gn;if(conv||Math.sqrt(g.reduce((a,v)=>a+v*v,0))<1e-7)break;}return{x,f:fx};}
+function impliedCFA(th,fac,p,twoF){const lam=th.slice(0,p).map(v=>clamp(v,-.995,.995));const phi=twoF?clamp(th[p],-.995,.995):1;const S=[];for(let i=0;i<p;i++){const r=[];for(let j=0;j<p;j++)r.push(i===j?1:lam[i]*lam[j]*(fac[i]===fac[j]?1:phi));S.push(r);}return{S,lam,phi};}
+function fitCFA(S,n,fac,twoF){const p=S.length,ldS=invLogDet(S).logdet;const f0=th=>{const r=invLogDet(impliedCFA(th,fac,p,twoF).S);if(!r.inv)return 1e6;const Sg=impliedCFA(th,fac,p,twoF).S;let tr=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)tr+=S[i][j]*r.inv[j][i];return r.logdet+tr-ldS-p;};const f=th=>f0(th)+penB(th);const x0=new Array(p).fill(.6);if(twoF)x0.push(.5);const res=bfgsR(f,x0);const im=impliedCFA(res.x,fac,p,twoF);const F=Math.max(res.f,0),chi=(n-1)*F,npar=p+(twoF?1:0),df=p*(p-1)/2-npar,df0=p*(p-1)/2,chi0=(n-1)*(-ldS);const resid=S.map((r,i)=>r.map((v,j)=>v-im.S[i][j]));let ss=0;for(let i=0;i<p;i++)for(let j=0;j<=i;j++)ss+=resid[i][j]**2;const srmr=Math.sqrt(ss/(p*(p+1)/2));const den=Math.max(chi-df,chi0-df0,1e-9);const cfi=1-Math.max(chi-df,0)/den;const tli=((chi0/df0)-(chi/df))/((chi0/df0)-1);const rmsea=Math.sqrt(Math.max(chi-df,0)/(df*(n-1)));const sf=signFix(im.lam,im.phi,fac,twoF);return{lam:sf.lam,phi:sf.phi,chi,df,pv:chi2sf(chi,df),cfi:Math.min(cfi,1),tli,rmsea,srmr,resid,chi0,df0};}
+/* TRI e ROC */
+const P2pl=(t,a,b)=>1/(1+Math.exp(-a*(t-b)));
+const info2pl=(t,a,b)=>{const P=P2pl(t,a,b);return a*a*P*(1-P);};
+function cvi(N,A){let c=1;for(let i=1;i<=A;i++)c=c*(N-A+i)/i;const pc=c*Math.pow(.5,N);return{I:A/N,pc,kappa:(A/N-pc)/(1-pc)};}
+
+/* invariância multigrupo (1 fator, 2 grupos, estrutura de médias) */
+function grpStats(X){const n=X.length,p=X[0].length,m=new Array(p).fill(0);X.forEach(r=>{for(let j=0;j<p;j++)m[j]+=r[j]/n;});const S=Array.from({length:p},()=>new Array(p).fill(0));X.forEach(r=>{for(let i=0;i<p;i++)for(let j=0;j<=i;j++)S[i][j]+=(r[i]-m[i])*(r[j]-m[j])/n;});for(let i=0;i<p;i++)for(let j=i+1;j<p;j++)S[i][j]=S[j][i];const ld=invLogDet(S).logdet;let ldR=ld;for(let i=0;i<p;i++)ldR-=Math.log(S[i][i]);return{n,m,S,ld,ldR};}
+function mgSpec(p,kind,free){const lamEq=new Array(p).fill(kind>=1),tauEq=new Array(p).fill(kind>=2);(free||[]).forEach(i=>{lamEq[i]=false;tauEq[i]=false;});return{lamEq,tauEq,psi:kind>=1,kap:kind>=2};}
+function mgUnpack(x,sp,p){let k=0;const lA=[],lB=[],tA=[],tB=[],hA=[],hB=[];for(let i=0;i<p;i++){lA.push(x[k++]);lB.push(sp.lamEq[i]?lA[i]:x[k++]);}for(let i=0;i<p;i++){tA.push(x[k++]);tB.push(sp.tauEq[i]?tA[i]:x[k++]);}for(let i=0;i<p;i++)hA.push(Math.exp(x[k++]));for(let i=0;i<p;i++)hB.push(Math.exp(x[k++]));const psi=sp.psi?Math.exp(x[k++]):1;const kap=sp.kap?x[k++]:0;return{lA,lB,tA,tB,hA,hB,psi,kap};}
+function mgFit(gA,gB,sp,xInit){const p=gA.m.length,N=gA.n+gB.n;
+ const Fg=(g,lam,tau,th,psi,kap)=>{const Sg=lam.map((a,i)=>lam.map((b,j)=>a*b*psi+(i===j?th[i]:0)));const r=invLogDet(Sg);if(!r.inv)return 1e6;let tr=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)tr+=g.S[i][j]*r.inv[j][i];const d=g.m.map((v,i)=>v-tau[i]-lam[i]*kap);let q=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)q+=d[i]*r.inv[i][j]*d[j];return r.logdet+tr-g.ld-p+q;};
+ const f=x=>{const u=mgUnpack(x,sp,p);return(gA.n*Fg(gA,u.lA,u.tA,u.hA,1,0)+gB.n*Fg(gB,u.lB,u.tB,u.hB,u.psi,u.kap))/N;};
+ const x0=[];for(let i=0;i<p;i++){x0.push(.7);if(!sp.lamEq[i])x0.push(.7);}for(let i=0;i<p;i++){x0.push(sp.tauEq[i]?(gA.m[i]+gB.m[i])/2:gA.m[i]);if(!sp.tauEq[i])x0.push(gB.m[i]);}for(let i=0;i<2*p;i++)x0.push(Math.log(.5));if(sp.psi)x0.push(0);if(sp.kap)x0.push(0);
+ const res=bfgsR(f,x0,300);const npar=x0.length,chi=N*Math.max(res.f,0),df=2*(p+p*(p+1)/2)-npar;
+ const chi0=gA.n*(-gA.ldR)+gB.n*(-gB.ldR),df0=p*(p-1);
+ const cfi=Math.min(1,1-Math.max(chi-df,0)/Math.max(chi-df,chi0-df0,1e-9));const rmsea=Math.sqrt(2*Math.max((chi-df)/(df*N),0));
+ return{chi,df,cfi,rmsea,u:mgUnpack(res.x,sp,p),x:res.x};}
+
+/* correlação policórica (máxima verossimilhança em duas etapas, Olsson, 1979) */
+function normInv(p){const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00],b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01],c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00],d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];const pl=0.02425;let q,r;if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}q=p-.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+function cdfW(x){const a=Math.abs(x);let c;if(a>37)c=0;else{const e=Math.exp(-a*a/2);if(a<7.07106781186547){let b=3.52624965998911e-02*a+0.700383064443688;b=b*a+6.37396220353165;b=b*a+33.912866078383;b=b*a+112.079291497871;b=b*a+221.213596169931;b=b*a+220.206867912376;c=e*b;b=8.83883476483184e-02*a+1.75566716318264;b=b*a+16.064177579207;b=b*a+86.7807322029461;b=b*a+296.564248779674;b=b*a+637.333633378831;b=b*a+793.826512519948;b=b*a+440.413735824752;c=c/b;}else{let b=a+0.65;b=a+4/b;b=a+3/b;b=a+2/b;b=a+1/b;c=e/b/2.506628274631;}}return x>0?1-c:c;}
+function bvn(h,k,r){if(h<=-7||k<=-7)return 0;if(h>=7)return cdfW(k);if(k>=7)return cdfW(h);const s=Math.sqrt(1-r*r),L=-7,n=64,w=(h-L)/n;let acc=0;for(let i=0;i<=n;i++){const x=L+i*w;acc+=Math.exp(-x*x/2)*0.3989422804014327*cdfW((k-r*x)/s)*(i===0||i===n?1:i%2?4:2);}return acc*w/3;}
+function polychoricFull(x,y){const n=x.length,cx=[...new Set(x)].sort((a,b)=>a-b),cy=[...new Set(y)].sort((a,b)=>a-b),K1=cx.length,K2=cy.length;if(K1<2||K2<2)return{r:NaN,v:NaN};const ix=new Map(cx.map((v,i)=>[v,i])),iy=new Map(cy.map((v,i)=>[v,i]));const tab=Array.from({length:K1},()=>new Array(K2).fill(0));for(let i=0;i<n;i++)tab[ix.get(x[i])][iy.get(y[i])]++;
+ const thr=m=>{const t=[-Infinity];let cum=0;for(let k=0;k<m.length-1;k++){cum+=m[k]/n;t.push(normInv(cum));}t.push(Infinity);return t;};
+ const a=thr(tab.map(r=>sum(r))),b=thr(Tr(tab).map(r=>sum(r)));
+ const ll=r=>{const F=Array.from({length:K1+1},()=>new Array(K2+1));for(let i=0;i<=K1;i++)for(let j=0;j<=K2;j++)F[i][j]=bvn(a[i],b[j],r);let s=0;for(let i=0;i<K1;i++)for(let j=0;j<K2;j++)if(tab[i][j]>0)s+=tab[i][j]*Math.log(Math.max(F[i+1][j+1]-F[i][j+1]-F[i+1][j]+F[i][j],1e-12));return s;};
+ let lo=-.995,hi=.995;const g=.6180339887;let c1=hi-g*(hi-lo),d1=lo+g*(hi-lo),f1=ll(c1),f2=ll(d1);for(let it=0;it<30;it++){if(f1>f2){hi=d1;d1=c1;f2=f1;c1=hi-g*(hi-lo);f1=ll(c1);}else{lo=c1;c1=d1;f1=f2;d1=lo+g*(hi-lo);f2=ll(d1);}}const r=(lo+hi)/2,hh=.02,rr=clamp(r,-.97,.97),d2=(ll(rr+hh)-2*ll(rr)+ll(rr-hh))/(hh*hh);return{r,v:d2<0?-1/d2:1/n};}
+function polychoric(x,y){return polychoricFull(x,y).r;}
+function polyMatV(X){const p=X[0].length,cols=[];for(let j=0;j<p;j++)cols.push(col(X,j));const R=Array.from({length:p},()=>new Array(p).fill(1)),V=Array.from({length:p},()=>new Array(p).fill(0));for(let i=0;i<p;i++)for(let j=i+1;j<p;j++){const q=polychoricFull(cols[i],cols[j]);R[i][j]=R[j][i]=isFinite(q.r)?q.r:0;V[i][j]=V[j][i]=isFinite(q.v)?q.v:1;}return{R,V};}
+function polyMat(X){const p=X[0].length,cols=[];for(let j=0;j<p;j++)cols.push(col(X,j));const R=Array.from({length:p},()=>new Array(p).fill(1));for(let i=0;i<p;i++)for(let j=i+1;j<p;j++){const r=polychoric(cols[i],cols[j]);R[i][j]=R[j][i]=isFinite(r)?r:0;}return R;}
+
+/* DWLS sobre correlações policóricas (pesos = inverso da variância aproximada de cada correlação) */
+function fitDWLS(R,V,fac,twoF){const p=R.length,prs=[];let sw=0;for(let i=0;i<p;i++)for(let j=i+1;j<p;j++){const w=1/Math.max(V[i][j],1e-6);prs.push([i,j,w]);sw+=w;}const mw=sw/prs.length;
+ const f0=th=>{const S=impliedCFA(th,fac,p,twoF).S;let s=0;for(const[i,j,w]of prs){const d=R[i][j]-S[i][j];s+=w/mw*d*d;}return s;};
+ const f=th=>f0(th)+penB(th);const x0=new Array(p).fill(.6);if(twoF)x0.push(.5);const res=bfgsR(f,x0);const im=impliedCFA(res.x,fac,p,twoF);const resid=R.map((r,i)=>r.map((v,j)=>v-im.S[i][j]));let ss=0;for(let i=0;i<p;i++)for(let j=0;j<=i;j++)ss+=resid[i][j]**2;
+ const sf=signFix(im.lam,im.phi,fac,twoF);return{lam:sf.lam,phi:sf.phi,resid,srmr:Math.sqrt(ss/(p*(p+1)/2)),df:p*(p-1)/2-(p+(twoF?1:0))};}
+function icc2(X1,X2){const n=X1.length,k=2,m1=mean(X1),m2=mean(X2),g=(m1+m2)/2;let ssr=0,ssc=0,sst=0;for(let i=0;i<n;i++){const ri=(X1[i]+X2[i])/2;ssr+=k*(ri-g)**2;sst+=(X1[i]-g)**2+(X2[i]-g)**2;}ssc=n*((m1-g)**2+(m2-g)**2);const sse=sst-ssr-ssc;const MSR=ssr/(n-1),MSC=ssc/(k-1),MSE=sse/((n-1)*(k-1)),MSW=(ssc+sse)/(n*(k-1));
+ return{icc1:(MSR-MSW)/(MSR+(k-1)*MSW),icc21:(MSR-MSE)/(MSR+(k-1)*MSE+k*(MSC-MSE)/n),icc31:(MSR-MSE)/(MSR+(k-1)*MSE),icc2k:(MSR-MSE)/(MSR+(MSC-MSE)/n),sd:Math.sqrt(sst/(2*n-1)),msc:MSC,mse:MSE};}
+/* modelo bifatorial ortogonal (1 fator geral + G específicos), ML sobre a matriz de correlações */
+function fitBifactor(S,n,grp){const p=S.length,G=Math.max(...grp)+1,ldS=invLogDet(S).logdet;
+ const unp=th=>{const g=th.slice(0,p).map(v=>clamp(v,-.98,.98)),s=th.slice(p,2*p).map(v=>clamp(v,-.98,.98));return{g,s};};
+ const sig=th=>{const{g,s}=unp(th);const M=[];for(let i=0;i<p;i++){const r=[];for(let j=0;j<p;j++)r.push(i===j?1:g[i]*g[j]+(grp[i]===grp[j]?s[i]*s[j]:0));M.push(r);}return M;};
+ const f0=th=>{const{g,s}=unp(th);let pen=0;for(let i=0;i<p;i++){const t=1-g[i]*g[i]-s[i]*s[i];if(t<.01)pen+=50*(.01-t)**2*100;}
+  const M=sig(th);for(let i=0;i<p;i++){const t=1-g[i]*g[i]-s[i]*s[i];if(t<.005)M[i][i]=1+(.005-t);}
+  const r=invLogDet(M);if(!r.inv)return 1e6;let tr=0;for(let i=0;i<p;i++)for(let j=0;j<p;j++)tr+=S[i][j]*r.inv[j][i];return r.logdet+tr-ldS-p+pen;};
+ const x0=new Array(p).fill(.5).concat(new Array(p).fill(.3));let best=null;
+ for(const[a,b]of[[.5,.3],[.3,.5],[.6,.1]]){const r=bfgsR(f0,new Array(p).fill(a).concat(new Array(p).fill(b)),300);if(!best||r.f<best.f)best=r;}
+ const{g,s}=unp(best.x);const th=g.map((v,i)=>Math.max(1-v*v-s[i]*s[i],0));let heywood=th.some(t=>t<.011)||g.some(v=>Math.abs(v)>.95)||s.some(v=>Math.abs(v)>.95);
+ const sg=g.reduce((a,b)=>a+b,0),sg2=g.reduce((a,b)=>a+b*b,0),ss2=s.reduce((a,b)=>a+b*b,0);let spec=0;const sub=[];
+ for(let k=0;k<G;k++){let a=0,b=0,t=0;for(let i=0;i<p;i++)if(grp[i]===k){a+=g[i];b+=s[i];t+=th[i];}spec+=b*b;sub.push({gs:a,ss:b,th:t,omS:b*b/(a*a+b*b+t),omG:a*a/(a*a+b*b+t),omT:(a*a+b*b)/(a*a+b*b+t)});}
+ const tth=th.reduce((a,b)=>a+b,0),den=sg*sg+spec+tth;
+ const chi=(n-1)*Math.max(best.f,0),df=p*(p-1)/2-2*p,chi0=-(n-1)*ldS,df0=p*(p-1)/2;
+ const cfi=Math.min(1,1-Math.max(chi-df,0)/Math.max(chi-df,chi0-df0,1e-9)),rmsea=Math.sqrt(Math.max((chi-df)/(df*(n-1)),0));
+ return{g,s,th,omH:sg*sg/den,omT:(sg*sg+spec)/den,ecv:sg2/(sg2+ss2),sub,chi,df,cfi,rmsea,heywood};}
+/* regressão logística (Newton–Raphson) e DIF por regressão logística (Swaminathan e Rogers, 1990) */
+function logitFit(X,y){const n=X.length,k=X[0].length;let b=new Array(k).fill(0),ll=-Infinity;
+ for(let it=0;it<30;it++){const g=new Array(k).fill(0),H=Array.from({length:k},()=>new Array(k).fill(0));let l=0;
+  for(let i=0;i<n;i++){let z=0;for(let j=0;j<k;j++)z+=X[i][j]*b[j];const pr=1/(1+Math.exp(-clamp(z,-30,30)));l+=y[i]?Math.log(Math.max(pr,1e-12)):Math.log(Math.max(1-pr,1e-12));const w=pr*(1-pr)+1e-9;
+   for(let j=0;j<k;j++){g[j]+=X[i][j]*(y[i]-pr);for(let m=0;m<k;m++)H[j][m]+=w*X[i][j]*X[i][m];}}
+  const r=invLogDet(H);if(!r.inv)break;let mx=0;for(let j=0;j<k;j++){let d=0;for(let m=0;m<k;m++)d+=r.inv[j][m]*g[m];b[j]+=d;mx=Math.max(mx,Math.abs(d));}ll=l;if(mx<1e-7)break;}
+ return{b,ll};}
+function difLR(y,s,grp){const n=y.length,M=[s.map((v,i)=>[1,v]),s.map((v,i)=>[1,v,grp[i]]),s.map((v,i)=>[1,v,grp[i],v*grp[i]])];
+ const F=M.map(X=>logitFit(X,y)),l0=logitFit(y.map(()=>[1]),y).ll;
+ const nag=l=>{const cs=1-Math.exp(2*(l0-l)/n),mx=1-Math.exp(2*l0/n);return cs/mx;};
+ const R=F.map(f=>nag(f.ll)),chi2=Math.max(2*(F[2].ll-F[0].ll),0),chiU=Math.max(2*(F[1].ll-F[0].ll),0),chiN=Math.max(2*(F[2].ll-F[1].ll),0);
+ return{chi2,chiU,chiN,p2:chi2sf(chi2,2),pU:chi2sf(chiU,1),pN:chi2sf(chiN,1),dR2:R[2]-R[0],bGrp:F[1].b[2]};}
+if(typeof module!=='undefined')module.exports={logitFit,difLR,fitBifactor,icc2,mulberry32,makeNormals,getZ,clamp,sum,mean,vari,sd,stdz,cor,col,corMat,chol,sampleFromR,invLogDet,eigenSym,normCdf,normPdf,chi2sf,cronbach,itemStats,meanOffDiag,paf,varimax,promax,tidyLoad,parallelAnalysis,kmo,bartlett,fitCFA,normInv,cdfW,bvn,polychoric,polyMat,polyMatV,polychoricFull,fitDWLS,grpStats,mgSpec,mgFit,P2pl,info2pl,cvi,gammaP,mmul,Tr};
+/* ===== UI: auxiliares ===== */
+const $=(s,r=document)=>r.querySelector(s);
+const SVGT=['svg','g','path','line','rect','circle','text','polyline','polygon','title'];
+function el(tag,attrs,parent,html){const ns=SVGT.includes(tag);const e=ns?document.createElementNS('http://www.w3.org/2000/svg',tag):document.createElement(tag);if(attrs)for(const k in attrs)if(attrs[k]!=null)e.setAttribute(k,attrs[k]);if(html!=null){if(ns)e.textContent=html;else e.innerHTML=html;}if(parent)parent.appendChild(e);return e;}
+const fn=(x,d=2)=>{if(x==null||!isFinite(x))return '—';return x.toFixed(d).replace('.',',').replace(/^-(?=\d)/,'−').replace(/^−0(,0+)?$/,'0$1');};
+const ap=(x,d=2)=>fn(x,d).replace(/^(−?)0,/,'$1,');
+const fpv=p=>p<.001?'< ,001':'= '+ap(p,3);
+const pct=(x,d=0)=>fn(x*100,d)+'%';
+/* controles */
+function slider(parent,o,cb){const wrap=el('label',{class:'ctl'},parent);const top=el('span',{class:'cl'},wrap);el('span',{},top,o.label);const v=el('b',{class:'cv'},top);const inp=el('input',{type:'range',min:o.min,max:o.max,step:o.step,value:o.val},wrap);const f=o.fmt||(x=>fn(x,o.dec==null?2:o.dec));v.textContent=f(parseFloat(o.val));const api={get:()=>parseFloat(inp.value),set(x){inp.value=x;v.textContent=f(parseFloat(inp.value));},el:inp,wrap};inp.addEventListener('input',()=>{v.textContent=f(api.get());cb&&cb(api.get());});return api;}
+function check(parent,label,val,cb){const w=el('label',{class:'ctl chk'},parent);const i=el('input',{type:'checkbox'},w);i.checked=!!val;el('span',{},w,label);i.addEventListener('change',()=>cb&&cb(i.checked));return{get:()=>i.checked,el:i,wrap:w};}
+let _rid=0;
+function radios(parent,label,opts,val,cb){const name='r'+(++_rid);const w=el('div',{class:'ctl',role:'radiogroup','aria-label':label},parent);el('span',{class:'cl'},w,label);const row=el('div',{class:'rrow'},w);let cur=val;const inputs=[];opts.forEach(([v,t])=>{const l=el('label',{class:'pill'},row);const i=el('input',{type:'radio',name},l);i.checked=(v===val);inputs.push([v,i]);el('span',{},l,t);i.addEventListener('change',()=>{if(i.checked){cur=v;cb&&cb(v);}});});return{get:()=>cur,set(v){cur=v;inputs.forEach(([x,i])=>i.checked=(x===v));}};}
+function btn(parent,text,cb,cls){const b=el('button',{type:'button',class:'btn '+(cls||'')},parent,text);b.addEventListener('click',cb);return b;}
+/* gráficos SVG */
+function chart(box,o={}){
+ box.innerHTML='';
+ const W=Math.round(clamp(box.clientWidth||620,280,780));
+ const H=Math.round(o.h||clamp(W*(o.ar||.6),220,380));
+ const m=Object.assign({l:46,r:14,t:14,b:40},o.m||{});
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,class:'chart',role:'img','aria-label':o.label||'Gráfico'},box);
+ const c={svg,W,H,m,x0:0,x1:1,y0:0,y1:1,iw:W-m.l-m.r,ih:H-m.t-m.b};
+ c.X=v=>m.l+(v-c.x0)/(c.x1-c.x0)*c.iw;
+ c.Y=v=>m.t+c.ih-(v-c.y0)/(c.y1-c.y0)*c.ih;
+ const pts=a=>a.map(p=>c.X(p[0]).toFixed(1)+','+c.Y(p[1]).toFixed(1)).join(' ');
+ c.dom=(x0,x1,y0,y1)=>{c.x0=x0;c.x1=x1;c.y0=y0;c.y1=y1;return c;};
+ c.axes=(xt,yt,xl,yl,fx,fy)=>{fx=fx||(v=>fn(v,0));fy=fy||(v=>fn(v,0));const g=el('g',{},svg);
+  yt.forEach(t=>{el('line',{class:'grid',x1:m.l,x2:W-m.r,y1:c.Y(t),y2:c.Y(t)},g);el('text',{class:'tl',x:m.l-6,y:c.Y(t)+4,'text-anchor':'end'},g,fy(t));});
+  xt.forEach(t=>{el('line',{class:'tick',x1:c.X(t),x2:c.X(t),y1:H-m.b,y2:H-m.b+4},g);el('text',{class:'tl',x:c.X(t),y:H-m.b+17,'text-anchor':'middle'},g,fx(t));});
+  el('line',{class:'axis',x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b},g);el('line',{class:'axis',x1:m.l,x2:m.l,y1:m.t,y2:H-m.b},g);
+  if(xl)el('text',{class:'at',x:m.l+c.iw/2,y:H-5,'text-anchor':'middle'},g,xl);
+  if(yl)el('text',{class:'at','text-anchor':'middle',transform:`translate(12,${m.t+c.ih/2}) rotate(-90)`},g,yl);return c;};
+ c.line=(a,cls)=>el('polyline',{class:cls||'ln s1',points:pts(a)},svg);
+ c.area=(a,base,cls)=>{const b=a.concat([[a[a.length-1][0],base],[a[0][0],base]]);return el('polygon',{class:cls||'ar f1',points:pts(b)},svg);};
+ c.dot=(x,y,r,cls)=>el('circle',{class:cls||'dt f1',cx:c.X(x).toFixed(1),cy:c.Y(y).toFixed(1),r:r||3},svg);
+ c.vline=(x,cls)=>el('line',{class:cls||'ref',x1:c.X(x),x2:c.X(x),y1:m.t,y2:H-m.b},svg);
+ c.hline=(y,cls)=>el('line',{class:cls||'ref',x1:m.l,x2:W-m.r,y1:c.Y(y),y2:c.Y(y)},svg);
+ c.seg=(x1,y1,x2,y2,cls)=>el('line',{class:cls||'ref',x1:c.X(x1),y1:c.Y(y1),x2:c.X(x2),y2:c.Y(y2)},svg);
+ c.rect=(x0,y0,x1,y1,cls)=>el('rect',{class:cls||'ar f1',x:c.X(Math.min(x0,x1)),y:c.Y(Math.max(y0,y1)),width:Math.abs(c.X(x1)-c.X(x0)),height:Math.abs(c.Y(y1)-c.Y(y0))},svg);
+ c.text=(x,y,s,cls,anchor,dx,dy)=>el('text',{class:cls||'lb',x:c.X(x)+(dx||0),y:c.Y(y)+(dy||0),'text-anchor':anchor||'start'},svg,s);
+ c.legend=(items,pos)=>{const wmax=Math.max(...items.map(i=>i[1].length))*6.2+32;const right=(pos||'tl').includes('r');const bottom=(pos||'tl').includes('b');const x0=right?W-m.r-wmax-4:m.l+8;const y0=bottom?H-m.b-8-items.length*16:m.t+6;
+  const g=el('g',{},svg);el('rect',{x:x0-4,y:y0-2,width:wmax+4,height:items.length*16+4,rx:6,fill:'var(--card)','fill-opacity':.82,stroke:'none'},g);
+  items.forEach((it,i)=>{const y=y0+8+i*16;if(it[2]==='dot')el('circle',{class:it[0],cx:x0+8,cy:y,r:4},g);else el('line',{class:'ln '+it[0],x1:x0,x2:x0+18,y1:y,y2:y},g);el('text',{class:'lb',x:x0+24,y:y+4},g,it[1]);});};
+ return c;}
+function heat(box,M,labels,o={}){
+ box.innerHTML='';const n=M.length;const W=Math.round(clamp(box.clientWidth||420,260,500));const lab=o.lab||28;const cs=Math.floor((W-lab)/n);const S=lab+cs*n;
+ const svg=el('svg',{viewBox:`0 0 ${S} ${S}`,class:'chart',role:'img','aria-label':o.label||'Mapa de calor'},box);
+ const mx=o.max||1;const showTxt=cs>=27;
+ for(let i=0;i<n;i++){el('text',{class:'tl','text-anchor':'middle',x:lab+i*cs+cs/2,y:lab-8},svg,labels[i]);el('text',{class:'tl','text-anchor':'end',x:lab-5,y:lab+i*cs+cs/2+4},svg,labels[i]);
+  for(let j=0;j<n;j++){const v=M[i][j];const diag=(i===j)&&!o.diagVal;const a=diag?0:Math.min(.8,Math.abs(v)/mx*.8);
+   el('rect',{class:'cell '+(v>=0?'f1':'f2'),x:lab+j*cs,y:lab+i*cs,width:cs,height:cs,'fill-opacity':diag?.07:a.toFixed(2)},svg);
+   if(showTxt&&!diag)el('text',{class:'hv','text-anchor':'middle',x:lab+j*cs+cs/2,y:lab+i*cs+cs/2+3.5},svg,ap(v,2));}}
+ return svg;}
+/* progresso salvo */
+let P={v:{},q:{}};
+try{const s=localStorage.getItem('psicolab-v1');if(s)P=Object.assign(P,JSON.parse(s));}catch(e){}
+function saveP(){try{localStorage.setItem('psicolab-v1',JSON.stringify(P));}catch(e){}}
+/* quiz */
+function quiz(parent,mid,items,o={}){
+ const sec=el('section',{class:'quiz'},parent);el('h3',{},sec,o.title||'Verifique o que aprendeu');
+ let answered=0,score=0;const sum_=el('div',{class:'fb',style:'display:none'});
+ items.forEach((q,qi)=>{const card=el('div',{class:'q'},sec);el('p',{class:'qq'},card,q.q);const key=mid+'.'+qi;const btns=[],byOrig=[];const fb=el('div',{class:'fb',style:'display:none',role:'status'},card);
+  const perm=q.o.map((_,i)=>i);if(!q.fix){let h=0;for(const ch of key)h=(h*31+ch.charCodeAt(0))>>>0;for(let i=perm.length-1;i>0;i--){h=(Math.imul(h,1103515245)+12345)>>>0;const j=(h>>>8)%(i+1);[perm[i],perm[j]]=[perm[j],perm[i]];}}
+  perm.forEach(oi=>{const t=q.o[oi];const b=el('button',{type:'button',class:'opt'},card,t);btns.push(b);byOrig[oi]=b;b.addEventListener('click',()=>{btns.forEach(x=>x.disabled=true);const ok=(oi===q.a);b.classList.add(ok?'right':'wrong');if(!ok)byOrig[q.a].classList.add('right');fb.style.display='block';fb.innerHTML=(ok?'<b class="ok">✓ Correto.</b> ':'<b class="no">✗ Não é essa.</b> ')+q.why;answered++;if(ok)score++;P.q[key]=ok?1:(P.q[key]||0);saveP();refreshNav();if(answered===items.length&&o.summary){sum_.style.display='block';sum_.innerHTML=o.summary(score,items.length);}});});
+  card.appendChild(fb);});
+ sec.appendChild(sum_);return sec;}
+/* ===== MÓDULOS ===== */
+const MODS=[];
+const UNITS=['Fundamentos','Fidedignidade','Validade','Modelos e uso dos escores','Fechamento'];
+
+/* 1 — Medir o invisível */
+MODS.push({id:'medir',u:0,title:'Medir o invisível',
+lead:'Ansiedade, inteligência e autoestima não se veem: só observamos respostas a itens. Na teoria clássica dos testes, o escore observado mistura o traço verdadeiro com erro de medida (X = T + E). Aqui você controla a fidedignidade e vê o que acontece com a medida.',
+pre:'Pré-requisitos: média, desvio-padrão e correlação (veja o Laboratório Interativo de Estatística).',
+build(ctx){
+ const N=200,Z=getZ(101,N,2);const Tz=stdz(col(Z,0)),Ez=stdz(col(Z,1));const T=Tz.map(z=>50+10*z);
+ const sl=slider(ctx.ctl,{label:'Fidedignidade do teste (ρ)',min:.3,max:.99,step:.01,val:.8},()=>update());
+ const sc=slider(ctx.ctl,{label:'Ponto de corte (escore T)',min:45,max:75,step:1,val:60,dec:0},()=>update());
+ const b1=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const rel=sl.get(),cut=sc.get(),sdE=10*Math.sqrt((1-rel)/rel);const X=T.map((t,i)=>t+sdE*Ez[i]);
+  const rTX=cor(T,X),relHat=vari(T)/vari(X);let nFP=0,nFN=0;
+  const c=chart(b1,{ar:.8,label:'Dispersão entre escore verdadeiro e escore observado'});
+  c.dom(0,100,0,100).axes([0,20,40,60,80,100],[0,20,40,60,80,100],'Escore verdadeiro (T)','Escore observado (X)');
+  c.seg(0,0,100,100,'ref');c.vline(cut,'ref2');c.hline(cut,'ref2');
+  X.forEach((x,i)=>{const a=x>=cut,b=T[i]>=cut;if(a&&!b)nFP++;if(!a&&b)nFN++;const bad=a!==b;c.dot(clamp(T[i],0,100),clamp(x,0,100),bad?3.8:2.4,bad?'dt f2':'dt f1 faint');});
+  c.legend([['f1','Classificação correta','dot'],['f2','Classificação trocada','dot']],'br');
+  ctx.read(`Fidedignidade amostral = <b>${fn(relHat)}</b> · r(T, X) = <b>${fn(rTX)}</b> (o esperado é √ρ = ${fn(Math.sqrt(rel))}) · erro padrão de medida = <b>${fn(sdE,1)}</b> pontos T.<br>Com corte em T = ${cut}, <b>${nFP+nFN}</b> de ${N} pessoas (${fn((nFP+nFN)/N*100,1)}%) trocam de lado só por causa do erro: ${nFP} falsos positivos e ${nFN} falsos negativos.`);
+  ctx.apa(`Em uma amostra simulada (<i>N</i> = ${N}), a fidedignidade do escore (razão entre a variância do escore verdadeiro e a do observado) foi ρ = ${ap(relHat)}, com erro padrão de medida de ${fn(sdE,1)} pontos T. A correlação entre escores observados e verdadeiros foi <i>r</i> = ${ap(rTX)}. Com ponto de corte em T = ${cut}, ${fn((nFP+nFN)/N*100,1)}% dos participantes seriam classificados em categoria diferente da verdadeira.`);
+ }
+ return{update};},
+exp:['Reduza a fidedignidade para 0,40: a nuvem se abre e as classificações trocadas se multiplicam.','Leve a fidedignidade a 0,99: a nuvem quase colapsa sobre a diagonal (X ≈ T).','Mude o corte para 70, onde há poucas pessoas: o erro importa mais para quem está perto do corte.'],
+defs:`<dl class="defs"><dt>Modelo clássico</dt><dd><span class="fx">X = T + E</span>. O erro E tem média zero e é independente do traço verdadeiro T.</dd>
+<dt>Fidedignidade</dt><dd><span class="fx">ρ<sub>XX</sub> = σ²<sub>T</sub> / σ²<sub>X</sub> = 1 − σ²<sub>E</sub> / σ²<sub>X</sub></span>: proporção da variância observada que é variância verdadeira.</dd>
+<dt>Índice de fidedignidade</dt><dd><span class="fx">r<sub>TX</sub> = √ρ<sub>XX</sub></span>: correlação entre o escore observado e o verdadeiro.</dd>
+<dt>Erro padrão de medida (EPM)</dt><dd><span class="fx">EPM = σ<sub>X</sub>·√(1 − ρ<sub>XX</sub>)</span>: desvio-padrão típico do erro, na unidade do teste.</dd></dl>`,
+prac:'Um psicólogo usa um teste com ponto de corte para decidir quem segue para avaliação complementar. Com fidedignidade 0,70, muita gente próxima do corte cai do lado errado só pelo acaso da medida. Por isso, decisões individuais pedem fidedignidade alta (a referência clássica é ≥ 0,90) e, sempre que possível, mais de uma fonte de informação.',
+quiz:[
+{q:'Um teste tem fidedignidade 0,81. Que proporção da variância dos escores observados é variância do traço verdadeiro?',o:['19%','81%','90%','Não é possível saber'],a:1,why:'A fidedignidade é, por definição, a razão σ²T/σ²X: 81% da variância observada é verdadeira e 19% é erro.'},
+{q:'O que acontece com a correlação entre o escore observado e o verdadeiro quando a fidedignidade diminui?',o:['Permanece igual','Diminui, pois r(T,X) = √ρ','Aumenta','Fica negativa'],a:1,why:'Menos fidedignidade significa mais erro no escore observado, e a correlação com o escore verdadeiro cai.'},
+{q:'Duas pessoas com escores observados idênticos têm necessariamente o mesmo traço verdadeiro?',o:['Sim, pois fizeram o mesmo teste','Não: o erro de medida pode fazer seus traços verdadeiros diferirem','Sim, se o teste for válido','Só se a amostra for grande'],a:1,why:'Como X = T + E, escores iguais podem combinar traços e erros diferentes. É por isso que se usam intervalos de confiança para escores individuais.'}]});
+
+/* 2 — Análise de itens */
+MODS.push({id:'itens',u:0,title:'Análise de itens',
+lead:'Antes de somar os itens num escore, examine cada um: como as respostas se distribuem, quanto o item se relaciona com o restante da escala e o que acontece com a consistência se ele sair. Aqui você “estraga” a escala de propósito e vê os sinais.',
+pre:'Pré-requisitos: módulo 1 e correlação de Pearson.',
+build(ctx){
+ const N=300,K=8,Z=getZ(202,N,K+1);const th=stdz(col(Z,0));const E=[];for(let i=0;i<K;i++)E.push(stdz(col(Z,i+1)));
+ const shifts=[-.6,-.35,-.1,.1,.25,.4,.0,.15],dl=[.08,-.05,.05,0,-.08,.03,-.03,0],ts=[-1.3,-.45,.45,1.3];
+ const sl=slider(ctx.ctl,{label:'Carga fatorial média dos itens (λ)',min:.3,max:.85,step:.01,val:.6},()=>update());
+ const c1=check(ctx.ctl,'Incluir item sem relação com o construto (item 8)',false,()=>update());
+ const c2=check(ctx.ctl,'Incluir item invertido sem recodificar (item 7)',false,()=>update());
+ const c3=check(ctx.ctl,'Recodificar o item invertido (6 − x)',false,()=>update());
+ const bt=el('div',{class:'cbox scroll'},ctx.ch);const bc=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  c3.el.disabled=!c2.get();
+  const l0=sl.get();const lam=dl.map(d=>clamp(l0+d,.2,.92));if(c1.get())lam[7]=.05;if(c2.get())lam[6]=-lam[6];
+  const X=[];const cats=[];
+  for(let i=0;i<N;i++){const r=[];for(let j=0;j<K;j++){const x=lam[j]*th[i]+Math.sqrt(1-lam[j]*lam[j])*E[j][i]+shifts[j];let ct=1;ts.forEach(t=>{if(x>t)ct++;});if(j===6&&c2.get()&&c3.get())ct=6-ct;r.push(ct);}X.push(r);}
+  const st=itemStats(X),al=cronbach(X);
+  let h='<table class="tbl"><thead><tr><th>Item</th><th>M</th><th>DP</th><th>Assim.</th><th>% piso</th><th>% teto</th><th>r item-total corr.</th><th>α se excluído</th><th>Sinal</th></tr></thead><tbody>';
+  const rits=[];
+  st.forEach((s,j)=>{const cj=col(X,j);const pf=cj.filter(v=>v===1).length/N,pt=cj.filter(v=>v===5).length/N;rits.push(s.rit);const flags=[];if(s.rit<0)flags.push('r negativa');else if(s.rit<.3)flags.push('baixa discriminação');if(pf>.15)flags.push('piso');if(pt>.15)flags.push('teto');if(s.aDel>al+.005)flags.push('α sobe se excluir');
+   h+=`<tr><td>Item ${j+1}</td><td>${fn(s.m)}</td><td>${fn(s.s)}</td><td>${fn(s.sk)}</td><td>${fn(pf*100,0)}</td><td>${fn(pt*100,0)}</td><td class="${s.rit<.3?'no':'ok'}">${fn(s.rit)}</td><td>${fn(s.aDel)}</td><td class="${flags.length?'wr':'dim'}">${flags.length?flags.join('; '):'—'}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">n = ${N}. Itens de 1 a 5 pontos. α total = ${fn(al)}. Referência prática: r item-total corrigida ≥ 0,30.</p>`;bt.innerHTML=h;
+  const c=chart(bc,{ar:.7,label:'Correlação item-total corrigida por item'});const lo=Math.min(-.1,Math.min(...rits)-.05);
+  c.dom(0,K,lo,1).axes(Array.from({length:K},(_,i)=>i+.5),[0,.2,.4,.6,.8,1],'Item','r item-total corrigida',v=>'I'+Math.round(v+.5),v=>fn(v,1));
+  rits.forEach((r,i)=>{c.rect(i+.15,0,i+.85,r,'bar '+(r<.3?'f2':'f1'));});c.hline(.3,'ref');c.text(K,.3,'0,30','lb2','end',-4,-4);c.hline(0,'ref2');
+  const bad=rits.map((r,i)=>[r,i]).filter(x=>x[0]<.3).map(x=>x[1]+1);
+  ctx.read(`α total = <b>${fn(al)}</b>. Itens com r item-total &lt; 0,30: <b>${bad.length?bad.join(', '):'nenhum'}</b>.${c2.get()&&!c3.get()?' O item 7 está invertido e não foi recodificado: sua correlação com o restante é negativa e puxa o α para baixo.':''}${c1.get()?' O item 8 não se relaciona com o construto: r ≈ 0 e o α melhora se ele sair.':''}`);
+  const mn=Math.min(...rits),mx=Math.max(...rits);
+  ctx.apa(`As correlações item-total corrigidas variaram de ${ap(mn)} a ${ap(mx)}. O coeficiente alfa de Cronbach da escala de ${K} itens foi α = ${ap(al)}${bad.length?`; os itens ${bad.join(', ')} apresentaram correlação item-total corrigida inferior a ,30`:''}.`);
+ }
+ return{update};},
+exp:['Marque “item sem relação”: a r item-total do item 8 cai a ~0 e o α sobe se ele for excluído.','Marque “invertido” sem recodificar: r negativa e α baixo. Depois marque “recodificar” e compare.','Reduza a carga média para 0,35: vários itens ficam abaixo de 0,30 ao mesmo tempo.'],
+defs:`<dl class="defs"><dt>Média do item (dificuldade/popularidade)</dt><dd>Em itens de acerto, a proporção de acertos; em escalas de concordância, o nível médio de concordância.</dd>
+<dt>Discriminação</dt><dd>Quanto o item separa pessoas com níveis diferentes do traço. Usa-se a correlação item-total <b>corrigida</b> (item removido do total, para não inflar a correlação consigo mesmo). Regra prática: ≥ 0,30.</dd>
+<dt>Efeitos de piso e teto</dt><dd>Concentração de respostas em uma categoria extrema; reduz a variância e a capacidade de discriminar. Como regra prática, desconfie quando passa de 15–20%.</dd>
+<dt>α se o item for excluído</dt><dd>Se sobe muito, o item contribui pouco para a covariância comum. Não elimine itens só por esse critério: considere o conteúdo (módulo 5).</dd>
+<dt>Itens invertidos</dt><dd>Precisam ser recodificados antes de somar (em escala de 1 a 5, usa-se 6 − x).</dd></dl>`,
+prac:'Ao adaptar uma escala para outra população, os itens problemáticos costumam aparecer primeiro nesta análise: itens com sentido cultural diferente, tradução ambígua ou invertidos que o respondente não entende bem. Eles merecem revisão de conteúdo antes de qualquer exclusão.',
+quiz:[
+{q:'Em uma escala cujos itens se correlacionam positivamente entre si, um item com correlação item-total corrigida negativa sugere:',o:['Item muito fácil','Item invertido sem recodificação (ou mal formulado)','Efeito de teto','Fidedignidade alta'],a:1,why:'Uma correlação negativa com o restante costuma indicar item invertido que não foi recodificado, ou item com formulação confusa.'},
+{q:'Por que a correlação item-total deve ser “corrigida”?',o:['Para normalizar a distribuição','Porque o item faz parte do total e inflaria a correlação','Para aumentar o alfa','Para remover itens invertidos'],a:1,why:'Sem a correção, parte da correlação vem do próprio item estar dentro do total, o que superestima a discriminação, principalmente em escalas curtas.'},
+{q:'O α aumenta bastante quando um item é excluído. Isso indica que o item:',o:['Contribui fortemente para a escala','Covaria pouco com os demais (ou mede outra coisa)','Tem efeito de piso','Está bem recodificado'],a:1,why:'Pouca covariância com os demais itens puxa o α para baixo. Ainda assim, a decisão de excluir deve considerar o conteúdo e a teoria, não apenas esse número.'}]});
+
+/* 3 — Consistência interna */
+MODS.push({id:'consistencia',u:1,title:'Consistência interna: alfa e ômega',
+lead:'O alfa de Cronbach é o coeficiente mais reportado em psicologia, e também um dos mais mal interpretados. Veja como ele depende do número de itens, do tamanho das cargas e da dimensionalidade, e por que o ômega costuma ser preferível.',
+pre:'Pré-requisitos: módulos 1 e 2. Sobre autovalores, o módulo 8 aprofunda.',
+build(ctx){
+ const N=500,Z=getZ(303,N,32);
+ const sk=slider(ctx.ctl,{label:'Número de itens (k)',min:3,max:30,step:1,val:10,dec:0},()=>update());
+ const sl=slider(ctx.ctl,{label:'Carga média dos itens (λ)',min:.2,max:.9,step:.01,val:.6},()=>update());
+ const ss=slider(ctx.ctl,{label:'Diferença entre cargas (0 = tau-equivalente)',min:0,max:.3,step:.01,val:0},()=>update());
+ const rd=radios(ctx.ctl,'Dimensionalidade real',[[1,'1 dimensão'],[2,'2 dimensões']],1,()=>update());
+ const sp=slider(ctx.ctl,{label:'Correlação entre as 2 dimensões (φ)',min:0,max:1,step:.05,val:.4},()=>update());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const k=sk.get(),l0=sl.get(),spr=ss.get(),two=rd.get()===2;sp.el.disabled=!two;const phi=two?sp.get():1;
+  const lam=Array.from({length:k},(_,i)=>clamp(l0+spr*(k>1?2*i/(k-1)-1:0),.1,.95));const half=Math.ceil(k/2);
+  const R=lam.map((a,i)=>lam.map((b,j)=>i===j?1:a*b*((i<half)===(j<half)?1:phi)));
+  const X=sampleFromR(R,N,Z);const Rs=corMat(X);const al=cronbach(X),rb=meanOffDiag(Rs);
+  const f=paf(Rs,1);const ld=f.L.map(r=>Math.abs(r[0]));const sL=sum(ld);const om=sL*sL/(sL*sL+sum(ld.map(v=>1-v*v)));
+  const ev=eigenSym(Rs).values;
+  const c=chart(bA,{ar:.75,label:'Alfa em função do número de itens'});
+  const ks=[];for(let q=2;q<=30;q++)ks.push([q,q*rb/(1+(q-1)*rb)]);
+  c.dom(0,31,0,1).axes([0,5,10,15,20,25,30],[0,.2,.4,.6,.8,1],'Número de itens','α (padronizado)',v=>fn(v,0),v=>fn(v,1));
+  [.7,.8,.9].forEach(v=>{c.hline(v,'ref2');c.text(31,v,fn(v,1),'lb2','end',-3,-3);});
+  c.line(ks,'ln s1');c.dot(k,al,5.5,'dt f2');c.text(k,al,'você está aqui','lb','middle',0,-11);
+  const m=Math.min(k,10);const c2=chart(bB,{ar:.75,label:'Autovalores da matriz de correlações'});const ymax=Math.max(2,Math.ceil(ev[0]));
+  c2.dom(.5,m+.5,0,ymax).axes(Array.from({length:m},(_,i)=>i+1),Array.from({length:ymax+1},(_,i)=>i),'Componente','Autovalor');
+  c2.hline(1,'ref');c2.text(m+.5,1,'autovalor = 1','lb2','end',-4,-4);c2.line(ev.slice(0,m).map((v,i)=>[i+1,v]),'ln s3');ev.slice(0,m).forEach((v,i)=>c2.dot(i+1,v,4,'dt f3'));
+  const warn=two&&ev[1]>1?` <span class="wr">Atenção: o 2º autovalor (${fn(ev[1])}) é maior que 1, evidência de mais de uma dimensão, mesmo com α = ${fn(al)}.</span>`:'';
+  ctx.read(`α = <b>${fn(al)}</b> · ω (1 fator) = <b>${fn(om)}</b> · correlação média entre itens = <b>${fn(rb)}</b> · 1º e 2º autovalores = <b>${fn(ev[0])}</b> e <b>${fn(ev[1])}</b>.${warn}${spr>0.1&&om-al>.005?' Com cargas desiguais, o α subestima a fidedignidade e o ω fica acima dele.':''}`);
+  ctx.apa(`A consistência interna da escala (${k} itens, <i>N</i> = ${N}) foi α = ${ap(al)} e ω ${two?'(modelo de 1 fator, aproximação)':''}= ${ap(om)}. A correlação média entre os itens foi <i>r̄</i> = ${ap(rb)}${two?`; o segundo autovalor da matriz de correlações foi ${fn(ev[1])}, o que sugere mais de uma dimensão, de modo que o α deve ser interpretado com cautela`:''}.`);
+ }
+ return{update};},
+exp:['Com 1 dimensão e k = 5, aumente k até 30: o α sobe mesmo sem melhorar nenhum item.','Escolha 2 dimensões com φ = 0,3: o α fica em torno de 0,72, aceitável, porém há dois autovalores maiores que 1: o α não revela a multidimensionalidade.','Aumente a diferença entre cargas: o ω fica acima do α, pois os itens deixam de ser tau-equivalentes.'],
+defs:`<dl class="defs"><dt>Alfa de Cronbach</dt><dd><span class="fx">α = k/(k−1) · (1 − Σσ²<sub>i</sub> / σ²<sub>total</sub>)</span>. Depende da covariância média entre itens e do número de itens.</dd>
+<dt>Ômega total</dt><dd><span class="fx">ω = (Σλ<sub>i</sub>)² / [(Σλ<sub>i</sub>)² + Σψ<sub>i</sub>]</span>, em que λ são as cargas e ψ as variâncias únicas. Não exige cargas iguais. O α só é igual ao ω quando as cargas são iguais (tau-equivalência) e há uma única dimensão; caso contrário, α ≤ ω.</dd>
+<dt>Spearman-Brown</dt><dd><span class="fx">ρ* = kρ / [1 + (k−1)ρ]</span>: previsão da fidedignidade ao multiplicar o tamanho do teste por k.</dd>
+<dt>Referências usuais</dt><dd>≥ 0,70 em pesquisa; ≥ 0,90 para decisões individuais. Valores acima de ~0,95 podem indicar itens redundantes.</dd>
+<dt>Cuidado</dt><dd>Alfa alto <b>não</b> prova unidimensionalidade nem validade. Verifique a estrutura (módulos 8 e 9).</dd></dl>`,
+prac:'Um relatório com “α = 0,92” para uma escala de 40 itens diz pouco sobre a escala ser unidimensional: com muitos itens, o α sobe quase sempre. Reporte α/ω junto à análise fatorial e, em escalas com subescalas, calcule o coeficiente por subescala.',
+quiz:[
+{q:'Uma escala tem α = 0,88, mas a análise fatorial mostra duas dimensões claras. Qual a leitura correta?',o:['O α prova que a escala é unidimensional','O α pode ser alto com mais de uma dimensão; ele não verifica dimensionalidade','O α está calculado errado','Deve-se excluir metade dos itens'],a:1,why:'O α mede covariância média e cresce com k; não testa se os itens medem uma única coisa.'},
+{q:'Mantida a qualidade média dos itens, aumentar o número de itens tende a:',o:['Diminuir o α','Aumentar o α','Não alterar o α','Diminuir só o ômega'],a:1,why:'Pela fórmula de Spearman-Brown, o coeficiente cresce com o número de itens, com ganhos cada vez menores.'},
+{q:'Quando α e ω coincidem?',o:['Sempre','Com cargas iguais (tau-equivalência) e unidimensionalidade','Quando k é par','Nunca'],a:1,why:'O α pressupõe cargas iguais; com cargas desiguais ele subestima a fidedignidade, e o ω é mais adequado.'}]});
+
+/* 4 — Estabilidade e erro de medida */
+MODS.push({id:'estabilidade',u:1,title:'Estabilidade, EPM e mudança confiável',
+lead:'Um teste é estável se, aplicado de novo em condições semelhantes, ordena as pessoas de modo parecido. Mas a pergunta clínica costuma ser outra: a diferença que vi entre duas aplicações é maior do que o erro de medida esperaria?',
+pre:'Pré-requisitos: módulo 1 (erro padrão de medida) e distribuição normal.',
+build(ctx){
+ const N=200,Z=getZ(404,N,3);const z0=stdz(col(Z,0)),z1=stdz(col(Z,1)),z2=stdz(col(Z,2));
+ const sr=slider(ctx.ctl,{label:'Fidedignidade teste-reteste (ρ)',min:.5,max:.99,step:.01,val:.85},()=>update());
+ const sd_=slider(ctx.ctl,{label:'Desvio-padrão do teste',min:5,max:20,step:1,val:15,dec:0},()=>update());
+ const ssh=slider(ctx.ctl,{label:'Mudança sistemática média na 2ª aplicação (efeito de prática, em pontos)',min:0,max:10,step:1,val:0,dec:0},()=>update());
+ const sx=slider(ctx.ctl,{label:'Escore observado de uma pessoa (X)',min:55,max:145,step:1,val:115,dec:0},()=>update());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch),bC=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const rho=sr.get(),S=sd_.get(),x=sx.get(),sem=S*Math.sqrt(1-rho),diff=1.96*Math.SQRT2*sem;
+  const sh=ssh.get();const X1=z0.map((a,i)=>100+S*Math.sqrt(rho)*a+sem*z1[i]),X2=z0.map((a,i)=>100+sh+S*Math.sqrt(rho)*a+sem*z2[i]);const ic=icc2(X1,X2),semI=ic.sd*Math.sqrt(Math.max(1-ic.icc21,0)),mdc=1.96*Math.SQRT2*semI,rObs=cor(X1,X2);
+  const lo=100-4*S,hi=100+4*S;const tks=[-3,-2,-1,0,1,2,3].map(k=>100+k*S);let out=0;
+  const c=chart(bA,{ar:.9,label:'Dispersão do escore na primeira e na segunda aplicação'});
+  c.dom(lo,hi,lo,hi).axes(tks,tks,'1ª aplicação','2ª aplicação');c.seg(lo,lo,hi,hi,'ref');c.seg(lo,lo+diff,hi-diff,hi,'ref2');c.seg(lo+diff,lo,hi,hi-diff,'ref2');
+  X1.forEach((a,i)=>{const o=Math.abs(X2[i]-a)>diff;if(o)out++;c.dot(clamp(a,lo,hi),clamp(X2[i],lo,hi),o?3.8:2.4,o?'dt f2':'dt f1 faint');});
+  c.legend([['f1','Dentro da faixa do erro','dot'],['f2','Fora da faixa (“mudança”)','dot']],'br');
+  const mu=100+rho*(x-100),see=S*Math.sqrt(rho*(1-rho));
+  const c2=chart(bB,{h:230,m:{l:70,r:14,t:14,b:40},label:'Intervalos de confiança de 95% para o escore verdadeiro'});
+  c2.dom(lo,hi,0,3).axes(tks,[],'Escore',null);
+  const rows=[[2,x-1.96*sem,x+1.96*sem,x,'s1','f1','X ± 1,96·EPM'],[1,mu-1.96*see,mu+1.96*see,mu,'s2','f2','Kelley']];
+  rows.forEach(r=>{c2.seg(r[1],r[0],r[2],r[0],'ln '+r[4]);c2.seg(r[1],r[0]-.12,r[1],r[0]+.12,'ln '+r[4]+' thin');c2.seg(r[2],r[0]-.12,r[2],r[0]+.12,'ln '+r[4]+' thin');c2.dot(r[3],r[0],5,'dt '+r[5]);c2.text(lo,r[0],r[6],'lb','start',-64,4);c2.text((r[1]+r[2])/2,r[0],`${fn(r[1],0)} a ${fn(r[2],0)}`,'lb2','middle',0,-12);});
+  c2.vline(x,'ref2');
+  ctx.read(`EPM = <b>${fn(sem,1)}</b> pontos · mudança entre aplicações só é “confiável” se |diferença| &gt; <b>${fn(diff,1)}</b> pontos (1,96·√2·EPM). Mesmo sem mudança real, <b>${out}</b> de ${N} pessoas (${fn(out/N*100,1)}%) ficam fora da faixa${sh===0?', em torno dos 5% esperados':'; com a mudança sistemática de '+sh+' pontos, mais pessoas parecem “mudar”'}.<br>Para X = ${x}: IC95% tradicional = <b>${fn(x-1.96*sem,0)} a ${fn(x+1.96*sem,0)}</b>; estimativa de Kelley do escore verdadeiro = <b>${fn(mu,0)}</b> (IC95% ${fn(mu-1.96*see,0)} a ${fn(mu+1.96*see,0)}), puxada em direção à média.`);
+  bC.innerHTML=`<table class="tbl"><thead><tr><th>Coeficiente</th><th>Valor</th><th>O que mede</th></tr></thead><tbody><tr><td>r de Pearson</td><td>${fn(rObs)}</td><td>Ordenação relativa; ignora diferença de médias</td></tr><tr><td>CCI consistência, (3,1)</td><td>${fn(ic.icc31)}</td><td>Como o r, para escores em escala comum; ignora a mudança sistemática</td></tr><tr><td>CCI acordo absoluto, (2,1)</td><td>${fn(ic.icc21)}</td><td>Penaliza a mudança sistemática: é o coeficiente do teste-reteste</td></tr><tr><td>CCI acordo, média de 2 medidas, (2,k)</td><td>${fn(ic.icc2k)}</td><td>Se o escore final for a média das duas aplicações</td></tr></tbody></table><p class="cap">EPM pelo CCI(2,1) = <b>${fn(semI,1)}</b> · diferença mínima detectável (MDC95 = 1,96·√2·EPM) = <b>${fn(mdc,1)}</b> pontos. Uma mudança individual menor que o MDC95 não se distingue do erro de medida. Diferença média observada: ${fn(mean(X2)-mean(X1),1)} ponto(s).</p>`;
+  ctx.apa(`A fidedignidade teste-reteste foi ρ = ${ap(rho)} (<i>DP</i> = ${S}); o coeficiente de correlação intraclasse (acordo absoluto, modelo de efeitos mistos de duas vias, medida única) foi CCI = ${ap(ic.icc21)} e a diferença mínima detectável a 95% foi de ${fn(mdc,1)} pontos. O erro padrão de medida foi de ${fn(sem,1)} pontos, resultando em erro padrão de medida de ${fn(sem,1)} pontos. Segundo o índice de mudança confiável (Jacobson &amp; Truax, 1991), diferenças superiores a ${fn(diff,1)} pontos entre aplicações excedem o esperado pelo erro de medida (IC95%). Para um escore observado de ${x}, o intervalo de confiança de 95% foi de ${fn(x-1.96*sem,0)} a ${fn(x+1.96*sem,0)}.`);
+ }
+ return{update};},
+exp:['Reduza ρ para 0,70: a faixa de mudança confiável se alarga bastante.','Aumente a mudança sistemática para 8 pontos: o r quase não muda, mas o CCI de acordo absoluto cai (o CCI de consistência, não).','Observe que cerca de 5% dos pontos caem fora da faixa mesmo sem mudança real: por isso uma única “mudança” isolada pede cautela.','Mova o escore observado para longe de 100: o intervalo de Kelley se desloca para a média, enquanto o tradicional fica simétrico em X.'],
+defs:`<dl class="defs"><dt>Teste-reteste</dt><dd>Correlação (ou, melhor, coeficiente de correlação intraclasse com acordo absoluto) entre duas aplicações. Depende do intervalo: curto demais gera efeito de memória e prática; longo demais mistura mudança real.</dd>
+<dt>CCI (ICC)</dt><dd>Razão entre a variância das pessoas e a variância total, obtida por ANOVA de medidas repetidas. <b>Consistência</b> (3,1) ignora diferenças sistemáticas entre aplicações; <b>acordo absoluto</b> (2,1) as penaliza; (2,k) refere-se à média de k medidas. Para teste-reteste, em geral se reporta o acordo absoluto, com IC95% (Koo e Li, 2016: &lt; 0,50 pobre; 0,50 a 0,75 moderada; 0,75 a 0,90 boa; &gt; 0,90 excelente).</dd>\n<dt>EPM</dt><dd><span class=\"fx\">EPM = DP·√(1 − ρ)</span></dd>\n<dt>MDC95</dt><dd><span class=\"fx\">MDC95 = 1,96·√2·EPM</span>: menor mudança individual que excede o erro de medida com 95% de confiança. Com o EPM e o RCI tem a mesma lógica, mas é expresso em pontos do instrumento.</dd>
+<dt>Intervalo de confiança do escore</dt><dd>Tradicional: <span class="fx">X ± 1,96·EPM</span>. Kelley: o escore verdadeiro estimado é <span class="fx">T̂ = M + ρ(X − M)</span>, com erro <span class="fx">DP·√(ρ(1−ρ))</span>.</dd>
+<dt>Índice de mudança confiável (RCI)</dt><dd><span class="fx">RCI = (X₂ − X₁) / (√2·EPM)</span>. Se |RCI| &gt; 1,96, a diferença supera o esperado só pelo erro de medida. Isso não implica relevância clínica.</dd>
+<dt>Correlação alta ≠ ausência de mudança</dt><dd>Duas aplicações podem se correlacionar muito e ainda assim diferir em média (efeito de prática). Examine também a diferença média.</dd></dl>`,
+prac:'Em acompanhamento de psicoterapia, comparar o escore de entrada e o de saída exige saber se a diferença supera o erro de medida do instrumento. Um paciente que “melhorou 4 pontos” em um teste com EPM de 4,5 pode não ter mudado de forma confiável.',
+quiz:[
+{q:'Um teste tem DP = 15 e fidedignidade 0,91. Qual é o EPM?',o:['1,35','4,5','9,0','13,6'],a:1,why:'EPM = 15·√(1 − 0,91) = 15·0,30 = 4,5 pontos.'},
+{q:'Duas aplicações têm r = 0,90, mas a média subiu 10 pontos na 2ª. Qual coeficiente reflete melhor a concordância?',o:['r de Pearson','CCI de consistência','CCI de acordo absoluto','Alfa de Cronbach'],a:2,why:'O CCI de acordo absoluto penaliza a diferença sistemática entre as aplicações; r e CCI de consistência a ignoram.'},
+{q:'O que significa |RCI| > 1,96?',o:['A mudança é clinicamente importante','A diferença excede o esperado só pelo erro de medida (aprox. 95% de confiança), sem garantir relevância clínica','O teste é válido','O reteste foi feito cedo demais'],a:1,why:'O RCI trata do erro de medida, não da importância clínica da mudança.'},
+{q:'Um teste-reteste teve r = 0,92, mas a média subiu 8 pontos do tempo 1 para o tempo 2. Interpretação mais adequada:',o:['Estabilidade perfeita','Boa ordenação relativa, mas possível efeito de prática ou viés sistemático','Baixa fidedignidade','Erro de digitação'],a:1,why:'A correlação mede a ordenação das pessoas, não o acordo absoluto. Uma diferença média sistemática indica viés ou efeito de prática.'}]});
+/* 5 — Validade de conteúdo */
+MODS.push({id:'conteudo',u:2,title:'Validade de conteúdo (IVC e κ*)',
+lead:'Antes de qualquer estatística sobre respostas, pergunta-se: os itens cobrem o construto? A validade de conteúdo se apoia no julgamento sistemático de especialistas. Aqui você simula um painel de juízes e vê o índice de validade de conteúdo de cada item.',
+pre:'Pré-requisitos: nenhum além dos módulos anteriores. Este módulo trabalha com proporções simples.',
+build(ctx){
+ const rng=mulberry32(505);const U=Array.from({length:12},()=>Array.from({length:10},()=>rng()));const base=[.97,.95,.92,.9,.85,.8,.72,.62,.5,.35];
+ const sn=slider(ctx.ctl,{label:'Número de juízes (N)',min:3,max:12,step:1,val:6,dec:0},()=>update());
+ const sb=slider(ctx.ctl,{label:'Qualidade geral dos itens (ajuste)',min:-.25,max:.25,step:.05,val:0},()=>update());
+ const bt=el('div',{class:'cbox scroll'},ctx.ch),bc=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const N=sn.get(),adj=sb.get(),thr=N<=5?1:.78;const rows=[];
+  for(let i=0;i<10;i++){let A=0;for(let j=0;j<N;j++)if(U[j][i]<clamp(base[i]+adj,.02,.99))A++;const r=cvi(N,A);rows.push({A,I:r.I,k:r.kappa});}
+  const ave=mean(rows.map(r=>r.I)),ua=rows.filter(r=>r.I===1).length/10;const keep=rows.filter(r=>r.I>=thr-1e-9).length;
+  let h='<table class="tbl"><thead><tr><th>Item</th><th>Juízes que deram 3 ou 4</th><th>I-CVI</th><th>κ*</th><th>Classificação de κ*</th><th>Decisão</th></tr></thead><tbody>';
+  rows.forEach((r,i)=>{const kl=r.k>=.74?'excelente':r.k>=.6?'bom':r.k>=.4?'regular':'fraco';const dec=r.I>=thr-1e-9?['Manter','ok']:r.I>=.5?['Revisar','wr']:['Excluir','no'];
+   h+=`<tr><td>Item ${i+1}</td><td>${r.A} de ${N}</td><td>${fn(r.I)}</td><td>${fn(r.k)}</td><td>${kl}</td><td class="${dec[1]}">${dec[0]}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">Limiar adotado para o I-CVI: ${N<=5?'1,00 (3 a 5 juízes)':'≥ 0,78 (6 ou mais juízes)'}. S-CVI/Ave = <b>${fn(ave)}</b> (referência ≥ 0,90); S-CVI/UA = <b>${fn(ua)}</b>.</p>`;bt.innerHTML=h;
+  const c=chart(bc,{ar:.75,label:'Índice de validade de conteúdo por item'});
+  c.dom(0,10,0,1).axes(Array.from({length:10},(_,i)=>i+.5),[0,.2,.4,.6,.8,1],'Item','I-CVI',v=>'I'+Math.round(v+.5),v=>fn(v,1));
+  rows.forEach((r,i)=>c.rect(i+.15,0,i+.85,r.I,'bar '+(r.I>=thr-1e-9?'f3':r.I>=.5?'f1':'f2')));c.hline(thr,'ref');c.text(10,thr,'limiar','lb2','end',-4,-4);
+  ctx.read(`Com ${N} juízes, <b>${keep}</b> de 10 itens atendem ao limiar. S-CVI/Ave = <b>${fn(ave)}</b>.${N<=5?' Com poucos juízes, qualquer discordância reprova o item.':''} Barras verdes: manter; azuis: revisar; laranja: excluir.`);
+  ctx.apa(`A validade de conteúdo foi avaliada por ${N} juízes especialistas, que julgaram a relevância de cada item em escala de 1 a 4 (itens relevantes: 3 ou 4). O I-CVI variou de ${ap(Math.min(...rows.map(r=>r.I)))} a ${ap(Math.max(...rows.map(r=>r.I)))}, e o S-CVI/Ave foi ${ap(ave)}. Foram mantidos ${keep} de 10 itens segundo o critério de I-CVI ${N<=5?'= 1,00':'≥ ,78'} (Lynn, 1986, conforme sintetizado por Polit &amp; Beck, 2006).`);
+ }
+ return{update};},
+exp:['Com 3 juízes, apenas a concordância total é aceita: basta um discordante para reprovar um item.','Aumente para 10 juízes: o limiar cai para 0,78 e itens com 8 de 10 passam a ser mantidos.','Reduza a “qualidade geral” para −0,20: cada vez mais itens caem para “revisar” ou “excluir”.'],
+defs:`<dl class="defs"><dt>Painel de juízes</dt><dd>Especialistas no construto e na população-alvo avaliam relevância (e, em geral, clareza) de cada item em escala de 4 pontos, de 1 (não relevante) a 4 (muito relevante).</dd>
+<dt>I-CVI (nível do item)</dt><dd><span class="fx">I-CVI = A / N</span>, em que A é o número de juízes que deram nota 3 ou 4. Referências usuais: 1,00 com 3 a 5 juízes; ≥ 0,78 com 6 ou mais.</dd>
+<dt>S-CVI (nível da escala)</dt><dd>S-CVI/Ave: média dos I-CVI (referência ≥ 0,90). S-CVI/UA: proporção de itens com concordância universal.</dd>
+<dt>κ* (kappa modificado)</dt><dd><span class="fx">κ* = (I-CVI − P<sub>c</sub>) / (1 − P<sub>c</sub>)</span>, com <span class="fx">P<sub>c</sub> = [N!/(A!(N−A)!)]·0,5<sup>N</sup></span> (concordância por acaso). Classificação usual: ≥ 0,74 excelente; 0,60–0,73 bom; 0,40–0,59 regular.</dd></dl>`,
+prac:'Na construção de um inventário, um painel de especialistas pode apontar itens fora do construto (por exemplo, um item de humor deprimido numa escala de ansiedade) antes que dinheiro e tempo sejam gastos na coleta. Além do painel, é recomendado o pré-teste com o público-alvo (entrevista cognitiva) para checar clareza.',
+quiz:[
+{q:'Com 8 juízes, 6 atribuíram nota 3 ou 4 a um item. Qual é o I-CVI?',o:['0,60','0,75','0,80','0,86'],a:1,why:'I-CVI = 6/8 = 0,75, abaixo do limiar usual de 0,78 para 6 ou mais juízes.'},
+{q:'Por que calcular o κ* além do I-CVI?',o:['Porque o I-CVI é inválido','Porque o κ* desconta a concordância esperada ao acaso','Porque exige menos juízes','Porque mede a fidedignidade do teste'],a:1,why:'O I-CVI não corrige o acordo que ocorreria por acaso; o kappa modificado corrige.'},
+{q:'A validade de conteúdo é avaliada principalmente por:',o:['Análise fatorial','Julgamento sistemático de especialistas sobre a relevância e a representatividade dos itens','Correlação com um critério externo','Alfa de Cronbach'],a:1,why:'Trata-se de evidência baseada no conteúdo, obtida por análise lógica e por julgamento de especialistas, antes da coleta de dados.'}]});
+
+/* 6 — Validade convergente, discriminante e atenuação */
+MODS.push({id:'convergente',u:2,title:'Validade convergente e discriminante',
+lead:'Uma medida de ansiedade deve se correlacionar bastante com outra medida de ansiedade (convergência) e pouco com uma medida de, digamos, extroversão (discriminação). Mas a fidedignidade limita as correlações que conseguimos observar: este é o fenômeno da atenuação.',
+pre:'Pré-requisitos: correlação (Laboratório de Estatística) e módulo 1 (fidedignidade).',
+build(ctx){
+ const N=250,Z=getZ(606,N,6).map(r=>r);const z=[0,1,2,3,4,5].map(j=>stdz(col(Z,j)));
+ const sr=slider(ctx.ctl,{label:'Correlação verdadeira entre A e B (mesmo construto)',min:0,max:1,step:.05,val:.8},()=>update());
+ const sa=slider(ctx.ctl,{label:'Fidedignidade da medida A',min:.3,max:.99,step:.01,val:.8},()=>update());
+ const sb=slider(ctx.ctl,{label:'Fidedignidade da medida B',min:.3,max:.99,step:.01,val:.7},()=>update());
+ const sc=slider(ctx.ctl,{label:'Correlação verdadeira entre A e C (outro construto)',min:0,max:.8,step:.05,val:.15},()=>update());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const rho=sr.get(),ra=sa.get(),rb=sb.get(),rc=sc.get(),rcc=.8;
+  const TA=z[0],TB=z[0].map((a,i)=>rho*a+Math.sqrt(1-rho*rho)*z[1][i]),TC=z[0].map((a,i)=>rc*a+Math.sqrt(1-rc*rc)*z[2][i]);
+  const A=TA.map((t,i)=>Math.sqrt(ra)*t+Math.sqrt(1-ra)*z[3][i]),B=TB.map((t,i)=>Math.sqrt(rb)*t+Math.sqrt(1-rb)*z[4][i]),C=TC.map((t,i)=>Math.sqrt(rcc)*t+Math.sqrt(1-rcc)*z[5][i]);
+  const rAB=cor(A,B),rAC=cor(A,C),rBC=cor(B,C),pred=rho*Math.sqrt(ra*rb),corr=rAB/Math.sqrt(ra*rb),rmax=Math.sqrt(ra*rb);
+  const c=chart(bA,{ar:.9,label:'Dispersão entre as medidas A e B'});c.dom(-4,4,-4,4).axes([-4,-2,0,2,4],[-4,-2,0,2,4],'Medida A (z)','Medida B (z)');
+  const sA=stdz(A),sB=stdz(B);sA.forEach((a,i)=>c.dot(clamp(a,-4,4),clamp(sB[i],-4,4),2.5,'dt f1 faint'));
+  const slope=rAB;c.seg(-4,-4*slope,4,4*slope,'ln s2 thin');c.text(4,4*slope,'reta de regressão','lb2','end',-2,-6);
+  heat(bB,[[ra,rAB,rAC],[rAB,rb,rBC],[rAC,rBC,rcc]],['A','B','C'],{diagVal:true,lab:30,label:'Matriz de correlações com fidedignidades na diagonal'});
+  el('p',{class:'cap'},bB,'Diagonal: fidedignidade de cada medida. Fora da diagonal: correlações observadas.');
+  ctx.read(`r(A, B) observada = <b>${fn(rAB)}</b> (esperada: ρ·√(r<sub>A</sub>·r<sub>B</sub>) = ${fn(pred)}) · corrigida para atenuação = <b>${fn(corr)}</b> · máximo observável = √(r<sub>A</sub>·r<sub>B</sub>) = <b>${fn(rmax)}</b>.<br>Convergente (A–B) = <b>${fn(rAB)}</b> versus discriminante (A–C) = <b>${fn(rAC)}</b>: ${rAB>rAC+.15?'<span class="ok">a convergência supera a discriminação, como previsto</span>':'<span class="wr">a diferença é pequena; as evidências são fracas</span>'}.${corr>1?' <span class="wr">A correlação corrigida passou de 1,00, algo que ocorre por erro amostral; não é uma estimativa válida.</span>':''}`);
+  ctx.apa(`A medida A correlacionou-se com a medida B, que avalia o mesmo construto, em <i>r</i> = ${ap(rAB)} (evidência convergente), e com a medida C, de construto distinto, em <i>r</i> = ${ap(rAC)} (evidência discriminante), <i>N</i> = ${N}. Dadas as fidedignidades das medidas (${ap(ra)} e ${ap(rb)}), a correlação máxima observável era ${ap(rmax)}; corrigida para atenuação, a correlação entre A e B foi ${ap(Math.min(corr,1))}.`);
+ }
+ return{update};},
+exp:['Coloque a correlação verdadeira A–B em 1,00 e as fidedignidades em 0,64 e 0,81: a correlação observada fica em torno de 0,72.','Aumente a correlação verdadeira A–C para 0,70: a evidência discriminante some.','Leve as fidedignidades a 0,99: a correlação observada se aproxima da verdadeira.'],
+defs:`<dl class="defs"><dt>Validade convergente</dt><dd>Medidas do mesmo construto (ou de construtos teoricamente próximos) correlacionam-se na direção e na magnitude previstas.</dd>
+<dt>Validade discriminante</dt><dd>Medidas de construtos distintos têm correlações menores que as convergentes.</dd>
+<dt>Atenuação</dt><dd><span class="fx">r<sub>obs</sub> = ρ<sub>verd</sub> · √(r<sub>XX</sub> · r<sub>YY</sub>)</span>. Correção: <span class="fx">ρ̂ = r<sub>obs</sub> / √(r<sub>XX</sub> · r<sub>YY</sub>)</span>.</dd>
+<dt>Matriz multitraço-multimétodo</dt><dd>Estrutura de Campbell e Fiske (1959) que cruza traços e métodos: a mesma característica por métodos distintos deve correlacionar mais do que características diferentes pelo mesmo método.</dd>
+<dt>Formule hipóteses antes</dt><dd>Defina antes da análise a direção e a magnitude esperadas de cada correlação, para que o resultado possa contrariar a teoria.</dd></dl>`,
+prac:'Ao validar uma escala de depressão, hipotetizamos antecipadamente: correlação alta com o BDI-II (convergente), moderada com ansiedade (relacionada, mas distinta) e baixa com traços de personalidade não relacionados. Se a correlação com a medida convergente for baixa, verifique também a fidedignidade das duas medidas antes de concluir contra a validade.',
+quiz:[
+{q:'Duas medidas do mesmo construto têm fidedignidades 0,64 e 0,81, e a correlação verdadeira entre os construtos é 1,00. Qual a máxima correlação observável?',o:['0,72','0,64','0,81','1,00'],a:0,why:'√(0,64 × 0,81) = 0,8 × 0,9 = 0,72.'},
+{q:'Há evidência discriminante quando:',o:['Duas medidas de construtos distintos se correlacionam muito','Medidas de construtos distintos se correlacionam menos do que as de mesmo construto','O alfa é maior que 0,90','Há muitos itens'],a:1,why:'Medidas de construtos distintos devem se correlacionar menos do que as convergentes.'},
+{q:'Uma correlação observada baixa entre duas medidas do mesmo construto pode refletir:',o:['Apenas falta de validade','Baixa fidedignidade de uma ou ambas as medidas (atenuação)','Apenas o tamanho da amostra','Nada de relevante'],a:1,why:'A fidedignidade limita a correlação máxima observável; só depois de considerá-la é que se conclui sobre a validade.'}]});
+
+/* 7 — Correlações policóricas */
+MODS.push({id:'policorica',u:2,title:'Correlações policóricas para itens ordinais',
+lead:'Itens Likert têm poucas categorias ordenadas, e a correlação de Pearson entre eles costuma subestimar a relação entre os construtos que estão por trás das respostas. A correlação policórica estima a correlação das variáveis contínuas latentes que teriam gerado as categorias. Compare as duas.',
+pre:'Pré-requisitos: correlação de Pearson, distribuição normal e os módulos 2 e 3. Aqui, 6 itens são gerados a partir de um fator e depois categorizados.',
+build(ctx){
+ const p=6;
+ const sn=slider(ctx.ctl,{label:'Tamanho da amostra (n)',min:200,max:1000,step:100,val:500,dec:0},()=>sched());
+ const sK=slider(ctx.ctl,{label:'Número de categorias de resposta',min:2,max:7,step:1,val:5,dec:0},()=>sched());
+ const ss=slider(ctx.ctl,{label:'Assimetria das respostas (+ = concentradas nas categorias baixas)',min:-1,max:1,step:.25,val:0},()=>sched());
+ const sl=slider(ctx.ctl,{label:'Carga verdadeira dos itens (λ)',min:.4,max:.9,step:.05,val:.7},()=>sched());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch);
+ let tm=null;function sched(){clearTimeout(tm);tm=setTimeout(update,60);}
+ const mk=(n,l)=>getZ(1301,n,p+1).map(z=>Array.from({length:p},(_,i)=>l*z[0]+Math.sqrt(1-l*l)*z[1+i]));
+ const disc=(L,K,sh)=>{const ts=[];for(let k=1;k<K;k++)ts.push(-1.6+3.2*k/K+sh);return L.map(r=>r.map(v=>{let c=1;ts.forEach(t=>{if(v>t)c++;});return c;}));};
+ const safe=v=>isFinite(v)?v:0;
+ function update(){
+  const n=sn.get(),K=sK.get(),sh=ss.get(),l=sl.get(),truth=l*l;
+  const L=mk(n,l),X=disc(L,K,sh);const Rp=corMat(X).map(r=>r.map(safe)),Rq=polyMat(X);
+  const pr=[],pc=[];for(let i=0;i<p;i++)for(let j=i+1;j<p;j++){pr.push(Rp[i][j]);pc.push(Rq[i][j]);}
+  const c=chart(bA,{ar:.75,label:'Correlações entre pares de itens: Pearson e policórica'});
+  c.dom(0,pr.length+1,0,Math.max(.9,truth+.15)).axes([1,5,10,15],[0,.2,.4,.6,.8],'Par de itens (15 pares)','Correlação',v=>fn(v,0),v=>fn(v,1));
+  c.hline(truth,'ref');c.text(pr.length+1,Math.max(.9,truth+.15),`linha tracejada: verdadeira = ${fn(truth)}`,'lb2','end',-4,12);
+  pr.forEach((v,i)=>c.dot(i+1,v,4,'dt f2'));pc.forEach((v,i)=>c.dot(i+1,v,4,'dt f1'));
+  c.legend([['f2','Pearson','dot'],['f1','Policórica','dot']],'br');
+  const ks=[2,3,4,5,6,7],mp=[],mq=[];
+  ks.forEach(k=>{const Xk=disc(L,k,sh);const a=[],b=[];[[0,1],[2,3],[4,5]].forEach(([i,j])=>{const x=col(Xk,i),y=col(Xk,j);a.push(safe(cor(x,y)));b.push(safe(polychoric(x,y)));});mp.push(mean(a));mq.push(mean(b));});
+  const c2=chart(bB,{ar:.75,label:'Correlação média em função do número de categorias'});
+  c2.dom(1.5,7.5,0,Math.max(.9,truth+.15)).axes(ks,[0,.2,.4,.6,.8],'Número de categorias','Correlação média (3 pares)',v=>fn(v,0),v=>fn(v,1));
+  c2.hline(truth,'ref');c2.line(ks.map((k,i)=>[k,mp[i]]),'ln s2');c2.line(ks.map((k,i)=>[k,mq[i]]),'ln s1');ks.forEach((k,i)=>{c2.dot(k,mp[i],3.5,'dt f2');c2.dot(k,mq[i],3.5,'dt f1');});c2.vline(K,'ref2');
+  c2.legend([['s2','Pearson'],['s1','Policórica']],'br');
+  const rp=mean(pr),rq=mean(pc),ld=R=>mean(paf(R,1).L.map(r=>Math.abs(r[0]))),al=r=>p*r/(1+(p-1)*r);
+  const rows=[['Verdadeiro (latente)',truth,l,al(truth)],['Pearson (categorias)',rp,ld(Rp),al(rp)],['Policórica',rq,ld(Rq),al(rq)]];
+  bT.innerHTML='<table class="tbl"><thead><tr><th>Matriz</th><th>r média entre itens</th><th>Carga média (1 fator, AFE)</th><th>Alfa (padronizado)</th><th>Viés da r média</th></tr></thead><tbody>'+rows.map((r,i)=>`<tr><td>${r[0]}</td><td>${fn(r[1])}</td><td>${fn(r[2])}</td><td>${fn(r[3])}</td><td>${i?fn((r[1]-truth)/truth*100,0)+'%':'—'}</td></tr>`).join('')+`</tbody></table><p class="cap">n = ${n}; ${K} categorias. O alfa calculado sobre a matriz policórica é o “alfa ordinal” (Zumbo, Gadermann e Zeisser, 2007).</p>`;
+  const bp=(rp-truth)/truth*100;
+  ctx.read(`Com ${K} categorias e assimetria ${fn(sh)}: r de Pearson média = <b>${fn(rp)}</b> (viés <b>${fn(bp,0)}%</b>), policórica média = <b>${fn(rq)}</b>, verdadeira = <b>${fn(truth)}</b>. Carga média na AFE: <b>${fn(ld(Rp))}</b> (Pearson) contra <b>${fn(ld(Rq))}</b> (policórica); verdadeira ${fn(l)}.${K<=3||Math.abs(sh)>=.75?' <span class="wr">Poucas categorias e/ou respostas assimétricas pioram a subestimação de Pearson.</span>':''}${n<=300?' Com n pequeno, a policórica fica mais instável (pontos mais dispersos).':''}`);
+  ctx.apa(`Como os itens são ordinais (${K} categorias de resposta), as correlações entre eles foram estimadas por correlações policóricas, com limiares obtidos das proporções marginais e coeficiente estimado por máxima verossimilhança (Olsson, 1979). A correlação policórica média foi ${ap(rq)} (correlação de Pearson média: ${ap(rp)}). A consistência interna foi estimada pelo alfa ordinal (α = ${ap(al(rq))}) e a análise fatorial foi conduzida sobre a matriz policórica (<i>N</i> = ${n}).`);
+ }
+ return{update};},
+exp:['Coloque 2 categorias e assimetria +1: a correlação de Pearson (phi) cai muito, e a policórica (tetracórica) recupera o valor verdadeiro.','Aumente para 7 categorias com assimetria 0: as duas se aproximam, e Pearson passa a funcionar razoavelmente.','Mantenha 7 categorias e leve a assimetria a +1: Pearson volta a subestimar, mesmo com muitas categorias.','Reduza n para 200: os pontos da policórica se espalham mais em torno do valor verdadeiro.'],
+defs:`<dl class="defs"><dt>Ideia</dt><dd>Supõe-se que cada item ordinal vem da categorização de uma variável contínua latente com distribuição normal; os <b>limiares</b> separam as categorias. A policórica é a correlação (de Pearson) entre as duas variáveis latentes. Com 2 categorias, chama-se <b>tetracórica</b>.</dd>
+<dt>Estimação em duas etapas</dt><dd>1) Limiares a partir das proporções cumulativas marginais: <span class="fx">τ<sub>k</sub> = Φ<sup>−1</sup>(proporção ≤ k)</span>. 2) A correlação ρ é a que maximiza a verossimilhança das frequências da tabela cruzada, usando a distribuição normal bivariada (Olsson, 1979).</dd>
+<dt>Por que Pearson subestima</dt><dd>Categorizar reduz a variância e distorce a relação; o efeito é maior com poucas categorias e quando as respostas se concentram em um extremo. Itens com assimetrias diferentes também geram “fatores de dificuldade” artificiais na AFE.</dd>
+<dt>Quando usar</dt><dd>Em itens ordinais curtos (por exemplo, até 5 ou 7 categorias), sobretudo com respostas assimétricas, na AFE, na AFC (estimadores para dados ordinais, como WLSMV/DWLS) e no alfa/ômega ordinais. Com muitas categorias e distribuição aproximadamente simétrica, Pearson tende a bastar.</dd>
+<dt>Limitações</dt><dd>Pressupõe normalidade latente bivariada; fica instável com amostras pequenas e células vazias; a matriz resultante pode não ser positiva definida e exigir suavização.</dd></dl>`,
+prac:'Em uma escala de depressão com itens de 4 categorias (“nunca” a “quase sempre”), as respostas costumam se concentrar nas categorias baixas em amostras comunitárias. Rodar a AFE sobre a matriz de Pearson tende a subestimar as cargas e a gerar fatores artificiais; a matriz policórica é a escolha mais segura.',
+quiz:[
+{q:'Itens Likert de 4 categorias, com respostas muito concentradas nas categorias altas. A correlação de Pearson entre eles tende a:',o:['Superestimar a relação entre os construtos','Subestimar a relação entre as variáveis latentes','Ser idêntica à policórica','Ficar sempre negativa'],a:1,why:'A categorização grosseira e a assimetria atenuam a correlação de Pearson; a policórica corrige parte desse efeito.'},
+{q:'O que a correlação policórica pressupõe?',o:['Que os itens são contínuos e normais','Que cada item ordinal resulta da categorização de uma variável contínua latente com distribuição normal','Que todos os itens têm a mesma média','Que não há erro de medida'],a:1,why:'Essa é a hipótese central: variáveis latentes normais bivariadas e limiares que geram as categorias.'},
+{q:'Qual o uso típico da matriz policórica?',o:['Calcular a média dos itens','Servir de base para AFE, AFC (WLSMV) e alfa ordinal com itens ordinais','Substituir o teste-reteste','Calcular o EPM'],a:1,why:'Ela é o ponto de partida de análises fatoriais e de fidedignidade em itens ordinais.'}]});
+
+/* 8 — AFE */
+MODS.push({id:'afe',u:2,title:'Análise fatorial exploratória',
+lead:'Quantas dimensões os itens medem? A AFE ajuda a responder. Você define a estrutura “verdadeira” e vê como as ferramentas se comportam: KMO, Bartlett, scree plot, análise paralela, cargas e rotação.',
+pre:'Pré-requisitos: correlação, módulo 3 (autovalores) e módulo 7 (correlações policóricas, para itens ordinais). Aqui, 12 itens são gerados com 1, 2 ou 3 fatores.',
+build(ctx){
+ const p=12,labs=Array.from({length:p},(_,i)=>'I'+(i+1)),Zf=getZ(707,1000,p);
+ const sn=slider(ctx.ctl,{label:'Tamanho da amostra (n)',min:100,max:1000,step:50,val:300,dec:0},()=>update());
+ const tr=radios(ctx.ctl,'Fatores verdadeiros',[[1,'1'],[2,'2'],[3,'3']],2,()=>update());
+ const sl=slider(ctx.ctl,{label:'Carga dos itens',min:.4,max:.85,step:.01,val:.65},()=>update());
+ const pf=slider(ctx.ctl,{label:'Correlação entre fatores (φ)',min:0,max:.7,step:.05,val:.3},()=>update());
+ const ex=radios(ctx.ctl,'Fatores a extrair',[[0,'Automático (análise paralela)'],[1,'1'],[2,'2'],[3,'3'],[4,'4']],0,()=>update());
+ const rt=radios(ctx.ctl,'Rotação',[['varimax','Varimax (ortogonal)'],['promax','Promax (oblíqua)']],'promax',()=>update());
+ const bH=el('div',{class:'cbox'},ctx.ch),bS=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch);
+ function update(){
+  const n=sn.get(),m=tr.get(),lm=sl.get(),phi=m>1?pf.get():0;pf.el.disabled=m===1;const per=p/m;
+  const R=Array.from({length:p},(_,i)=>Array.from({length:p},(_,j)=>i===j?1:lm*lm*(Math.floor(i/per)===Math.floor(j/per)?1:phi)));
+  const X=sampleFromR(R,n,Zf),Rs=corMat(X),ev=eigenSym(Rs).values,pa=parallelAnalysis(n,p),km=kmo(Rs),bt_=bartlett(Rs,n);
+  let nPA=0;while(nPA<p&&ev[nPA]>pa[nPA])nPA++;nPA=Math.max(nPA,1);const nK=ev.filter(v=>v>1).length;
+  const mu=ex.get()===0?nPA:ex.get();
+  heat(bH,Rs,labs,{label:'Matriz de correlações entre os 12 itens'});
+  const c=chart(bS,{ar:.8,label:'Scree plot com análise paralela'});c.dom(.5,p+.5,0,Math.max(2,Math.ceil(ev[0])+.5)).axes(Array.from({length:p},(_,i)=>i+1),Array.from({length:Math.ceil(ev[0])+1},(_,i)=>i),'Componente','Autovalor');
+  c.hline(1,'ref2');c.line(pa.map((v,i)=>[i+1,v]),'ln s2 dash');c.line(ev.map((v,i)=>[i+1,v]),'ln s1');ev.forEach((v,i)=>c.dot(i+1,v,3.6,'dt f1'));
+  c.legend([['s1','Dados observados'],['s2 dash','Dados aleatórios (percentil 95)'],['s1 thin dash2','Autovalor = 1 (Kaiser)']],'tr');
+  const f=paf(Rs,mu);let L=f.L,Phi=null;if(mu>1){L=varimax(f.L);if(rt.get()==='promax'){const q=promax(L);L=q.P;Phi=q.Phi;}}
+  const td=tidyLoad(L,Phi);L=td.L;Phi=td.Phi;const hh=f.h;
+  let h='<table class="tbl"><thead><tr><th>Item</th>'+L[0].map((_,k)=>`<th>F${k+1}</th>`).join('')+'<th>h²</th></tr></thead><tbody>';
+  L.forEach((r,i)=>{h+=`<tr><td>${labs[i]}</td>`+r.map(v=>`<td class="${Math.abs(v)>=.4?'hl':Math.abs(v)<.3?'dim':''}">${fn(v)}</td>`).join('')+`<td>${fn(hh[i])}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">Extração por eixos principais, ${mu} fator(es)${mu>1?', rotação '+(rt.get()==='promax'?'promax':'varimax'):''}. Negrito: |carga| ≥ 0,40; cinza: &lt; 0,30.${Phi?' Correlação entre fatores estimada: '+Phi[0].slice(1).map((v,k)=>`F1–F${k+2} = ${fn(v)}`).join('; ')+'.':''}</p>`;bT.innerHTML=h;
+  const varExp=sum(hh)/p;
+  ctx.read(`KMO = <b>${fn(km)}</b> · Bartlett χ²(${bt_.df}) = <b>${fn(bt_.chi,1)}</b>, p ${fpv(bt_.p)} · Fatores sugeridos: análise paralela = <b>${nPA}</b>, Kaiser (autovalor &gt; 1) = <b>${nK}</b>${nK!==nPA?' <span class="wr">(os critérios divergem)</span>':''} · Verdadeiro = <b>${m}</b> · Extraindo <b>${mu}</b>, a variância comum explicada é <b>${fn(varExp*100,0)}%</b>.`);
+  ctx.apa(`Realizou-se uma análise fatorial exploratória com extração por eixos principais e rotação ${mu>1?(rt.get()==='promax'?'promax':'varimax'):'(não aplicável a um fator)'} (<i>n</i> = ${n}; ${p} itens). A adequação da amostra foi satisfatória (KMO = ${ap(km)}; teste de Bartlett: χ²(${bt_.df}) = ${fn(bt_.chi,1)}, <i>p</i> ${fpv(bt_.p)}). A análise paralela indicou ${nPA} fator(es), solução que explicou ${fn(varExp*100,0)}% da variância comum. As cargas fatoriais variaram de ${ap(Math.min(...L.map((r,i)=>Math.max(...r.map(Math.abs)))))} a ${ap(Math.max(...L.map(r=>Math.max(...r.map(Math.abs)))))}.`);
+ }
+ return{update};},
+exp:['Com 2 fatores e φ = 0,50, compare varimax e promax: só a promax recupera a correlação entre os fatores.','Reduza n para 100: as estimativas dos autovalores ficam mais instáveis; compare a análise paralela com o critério de Kaiser.','Force 1 fator (ou 3) quando há 2: veja os itens se misturarem ou um fator “fantasma” aparecer.'],
+defs:`<dl class="defs"><dt>AFE × ACP</dt><dd>A AFE modela a variância <b>comum</b> entre itens (comunalidades); a análise de componentes principais usa a variância total e não é um modelo de fatores.</dd>
+<dt>KMO e Bartlett</dt><dd>KMO compara correlações observadas com parciais (&lt; 0,60 é inadequado; ≥ 0,80, bom). Bartlett testa se a matriz de correlações difere da identidade (quase sempre significativo com n grande).</dd>
+<dt>Quantos fatores?</dt><dd>Critério de Kaiser (autovalor &gt; 1) costuma superestimar; scree plot é subjetivo; a <b>análise paralela</b> (Horn) compara com autovalores de dados aleatórios e é a mais recomendada. Some interpretabilidade e teoria.</dd>
+<dt>Rotação</dt><dd>Ortogonal (varimax) impõe fatores não correlacionados; oblíqua (promax, oblimin) permite correlação. Em psicologia, constructos costumam se correlacionar: prefira a oblíqua.</dd>
+<dt>Cargas e comunalidades</dt><dd>Regra prática: |λ| ≥ 0,40. Cargas cruzadas altas indicam itens que medem mais de um fator. h² é a parte da variância do item explicada pelos fatores.</dd>
+<dt>Itens ordinais</dt><dd>Com itens Likert curtos ou assimétricos, faça a AFE sobre a matriz policórica (módulo 7); a de Pearson tende a subestimar as cargas.</dd>
+<dt>Tamanho da amostra</dt><dd>Regras como “10 por item” são heurísticas; o necessário depende das comunalidades e da sobredeterminação dos fatores.</dd></dl>`,
+prac:'Em adaptação de escalas, é comum rodar a AFE numa metade da amostra e confirmar a estrutura (AFC, módulo 9) na outra. Itens com cargas cruzadas ou comunalidades baixas são candidatos a revisão de conteúdo antes de qualquer exclusão.',
+quiz:[
+{q:'Qual critério de retenção de fatores costuma ser mais recomendado?',o:['Autovalor maior que 1','Análise paralela','Maior variância explicada','Número de itens dividido por 3'],a:1,why:'O critério de Kaiser tende a superestimar o número de fatores; a análise paralela compara com autovalores obtidos de dados aleatórios.'},
+{q:'Se os fatores se correlacionam (por exemplo, φ = 0,5), a rotação mais adequada é:',o:['Varimax','Oblíqua (promax ou oblimin)','Nenhuma','Qualquer uma, dá igual'],a:1,why:'A rotação ortogonal força fatores independentes; se eles se correlacionam, a solução fica distorcida.'},
+{q:'Qual a diferença central entre AFE (eixos principais) e ACP?',o:['Nenhuma','A AFE modela a variância comum; a ACP usa a variância total','A ACP exige rotação','A AFE exige amostras menores'],a:1,why:'A AFE separa variância comum e variância única; a ACP é redução de dados.'}]});
+
+/* 8 — AFC e índices de ajuste */
+MODS.push({id:'afc',u:2,title:'Análise fatorial confirmatória e ajuste',
+lead:'Na AFC você especifica o modelo antes e testa o quanto ele reproduz as correlações observadas. Aqui os dados vêm de uma estrutura que você controla, e o modelo escolhido pode estar certo ou errado.',
+pre:'Pré-requisitos: módulo 8 (AFE). O modelo é ajustado por máxima verossimilhança, com itens padronizados.',
+build(ctx){
+ const p=12,labs=Array.from({length:p},(_,i)=>'I'+(i+1)),Zf=getZ(808,1000,p);
+ const sn=slider(ctx.ctl,{label:'Tamanho da amostra (n)',min:100,max:1000,step:50,val:400,dec:0},()=>update());
+ const sl=slider(ctx.ctl,{label:'Carga dos itens (λ)',min:.5,max:.85,step:.01,val:.7},()=>update());
+ const sf=slider(ctx.ctl,{label:'Correlação real entre as duas dimensões (1 = unidimensional)',min:.3,max:1,step:.05,val:.5},()=>update());
+ const sd2=slider(ctx.ctl,{label:'Correlação residual real entre os itens 1 e 2',min:0,max:.4,step:.05,val:0},()=>update());
+ const md=radios(ctx.ctl,'Modelo ajustado',[[1,'1 fator'],[2,'2 fatores correlacionados']],1,()=>update());
+ const bR=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll'},ctx.ch);
+ function update(){
+  const n=sn.get(),lm=sl.get(),phi=sf.get(),dl=sd2.get(),two=md.get()===2;
+  const R=Array.from({length:p},(_,i)=>Array.from({length:p},(_,j)=>i===j?1:lm*lm*((i<6)===(j<6)?1:phi)));R[0][1]=R[1][0]=lm*lm+dl*(1-lm*lm);
+  const S=corMat(sampleFromR(R,n,Zf));const fac=Array.from({length:p},(_,i)=>two&&i>=6?1:0);const ft=fitCFA(S,n,fac,two);
+  heat(bR,ft.resid,labs,{max:.2,label:'Resíduos de correlação (observada menos implicada pelo modelo)'});
+  el('p',{class:'cap'},bR,'Resíduos de correlação: azul = o modelo subestima a correlação; laranja = superestima. Células escuras apontam o que o modelo não explica.');
+  const rows=[['χ²('+ft.df+')',fn(ft.chi,1),'p '+fpv(ft.pv),ft.pv>.05],['CFI',fn(ft.cfi,3),'≥ 0,95',ft.cfi>=.95],['TLI',fn(ft.tli,3),'≥ 0,95',ft.tli>=.95],['RMSEA',fn(ft.rmsea,3),'≤ 0,06',ft.rmsea<=.06],['SRMR',fn(ft.srmr,3),'≤ 0,08',ft.srmr<=.08]];
+  let h='<table class="tbl"><thead><tr><th>Índice</th><th>Valor</th><th>Referência</th><th>Leitura</th></tr></thead><tbody>';
+  rows.forEach(r=>{h+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="${r[3]?'ok':'no'}">${r[3]?'✓ atende':'✗ não atende'}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">Cargas estimadas: ${fn(Math.min(...ft.lam))} a ${fn(Math.max(...ft.lam))}${two?'; correlação entre fatores = '+fn(ft.phi):''}. Referências de Hu e Bentler (1999): são guias, não regras absolutas.</p>`;bT.innerHTML=h;
+  const ok=ft.cfi>=.95&&ft.rmsea<=.06&&ft.srmr<=.08;
+  ctx.read(`Modelo de <b>${two?'2 fatores correlacionados':'1 fator'}</b>: CFI = <b>${fn(ft.cfi,3)}</b>, RMSEA = <b>${fn(ft.rmsea,3)}</b>, SRMR = <b>${fn(ft.srmr,3)}</b>. ${ok?'<span class="ok">O ajuste é bom.</span>':'<span class="no">O ajuste é insatisfatório.</span>'}${!two&&phi<.9?' Há duas dimensões reais, e o modelo de 1 fator não as representa: veja os blocos de resíduos nos itens 1–6 e 7–12.':''}${dl>0&&phi>=.9?' A correlação residual entre I1 e I2 aparece como célula escura na matriz.':''}`);
+  ctx.apa(`Testou-se por AFC (máxima verossimilhança; <i>N</i> = ${n}) um modelo de ${two?'dois fatores correlacionados':'um fator'}. O ajuste foi ${ok?'adequado':'insatisfatório'}: χ²(${ft.df}) = ${fn(ft.chi,1)}, <i>p</i> ${fpv(ft.pv)}; CFI = ${ap(ft.cfi,3)}; TLI = ${ap(ft.tli,3)}; RMSEA = ${ap(ft.rmsea,3)}; SRMR = ${ap(ft.srmr,3)}. As cargas padronizadas variaram de ${ap(Math.min(...ft.lam))} a ${ap(Math.max(...ft.lam))}${two?` e a correlação entre os fatores foi ${ap(ft.phi)}`:''}. Recomenda-se informar também o intervalo de confiança de 90% do RMSEA.`);
+ }
+ return{update};},
+exp:['Com φ real = 0,50 e modelo de 1 fator, o ajuste é ruim. Troque para 2 fatores: o ajuste fica bom.','Com φ real = 1,00 e correlação residual 0, o modelo de 1 fator ajusta bem.','Com φ = 1,00 e correlação residual 0,30, procure a célula escura entre I1 e I2 no mapa de resíduos.','Aumente n com ajuste “quase bom”: o χ² cresce e o p fica significativo, enquanto RMSEA e CFI mudam pouco.'],
+defs:`<dl class="defs"><dt>Ideia</dt><dd>A AFC compara a matriz de correlações observada com a que o modelo implica. Se o modelo é bom, os resíduos são pequenos.</dd>
+<dt>χ² e graus de liberdade</dt><dd>Testa o ajuste exato. É muito sensível ao tamanho da amostra: com n grande, rejeita modelos praticamente aceitáveis.</dd>
+<dt>CFI e TLI (incrementais)</dt><dd>Comparam o modelo ao modelo nulo (itens não correlacionados). Referência usual ≥ 0,95.</dd>
+<dt>RMSEA (parcimônia)</dt><dd><span class="fx">√[max(χ² − gl, 0) / (gl·(n−1))]</span>. Referência ≤ 0,06; pode ser inflado com poucos graus de liberdade.</dd>
+<dt>SRMR (resíduos)</dt><dd>Média dos resíduos padronizados. Referência ≤ 0,08.</dd>
+<dt>Itens ordinais</dt><dd>Com itens Likert curtos ou assimétricos, o estimador adequado trabalha sobre a matriz policórica (DWLS/WLSMV; módulo 10), e não sobre a de Pearson.</dd>
+<dt>Cuidado com os pontos de corte</dt><dd>Os valores de Hu e Bentler (1999) são orientações e dependem do modelo e dos dados. Inspecione resíduos e compare modelos rivais; modifique o modelo só com justificativa teórica.</dd></dl>`,
+prac:'Ao validar uma escala já construída, rode a AFC numa amostra diferente da usada na AFE. Se o modelo de um fator ajusta mal, compare com um de dois fatores (ou bifatorial) e procure nos resíduos quais itens compartilham conteúdo — redação semelhante costuma gerar correlações residuais.',
+quiz:[
+{q:'O χ² é significativo com n = 2.000, mas CFI = 0,98 e RMSEA = 0,03. Qual a conclusão mais adequada?',o:['O modelo é inválido','O χ² é sensível ao n; os demais índices e os resíduos indicam bom ajuste','O modelo é perfeito','É preciso reduzir o número de itens'],a:1,why:'O χ² rejeita facilmente com amostras grandes; avalia-se o conjunto de índices e os resíduos.'},
+{q:'Qual destes índices é incremental (compara com o modelo nulo)?',o:['RMSEA','SRMR','CFI','χ²/gl'],a:2,why:'O CFI (e o TLI) comparam o ajuste do modelo ao do modelo de independência.'},
+{q:'Resíduos grandes entre dois itens indicam:',o:['Alta fidedignidade','Covariação que o modelo não explica (por exemplo, conteúdo semelhante ou outra dimensão)','Normalidade dos dados','Efeito de teto'],a:1,why:'O resíduo é a diferença entre a correlação observada e a implicada; valores altos mostram onde o modelo falha.'}]});
+
+/* 9b — Estimadores para itens ordinais */
+MODS.push({id:'estimadores',u:2,title:'Estimadores para itens ordinais (DWLS e WLSMV)',
+lead:'Na AFC com itens Likert, tratar as categorias como números contínuos (máxima verossimilhança sobre a matriz de Pearson) pode subestimar cargas e correlações entre fatores. Estimadores para dados ordinais trabalham sobre a matriz policórica. Compare os dois sobre os mesmos dados.',
+pre:'Pré-requisitos: módulos 7 (correlações policóricas) e 9 (AFC). Aqui, 8 itens com 2 fatores correlacionados são gerados, categorizados e ajustados pelos dois métodos.',
+build(ctx){
+ const p=8,fac=[0,0,0,0,1,1,1,1],labs=['I1','I2','I3','I4','I5','I6','I7','I8'];
+ const sn=slider(ctx.ctl,{label:'Tamanho da amostra (n)',min:200,max:1000,step:100,val:500,dec:0},()=>sched());
+ const sK=slider(ctx.ctl,{label:'Número de categorias de resposta',min:2,max:7,step:1,val:4,dec:0},()=>sched());
+ const ss=slider(ctx.ctl,{label:'Assimetria das respostas (+ = concentradas nas categorias baixas)',min:-1,max:1,step:.25,val:.5},()=>sched());
+ const sl=slider(ctx.ctl,{label:'Carga verdadeira dos itens (λ)',min:.5,max:.85,step:.05,val:.7},()=>sched());
+ const sf=slider(ctx.ctl,{label:'Correlação verdadeira entre os fatores (φ)',min:.2,max:.8,step:.05,val:.5},()=>sched());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch);
+ let tm=null;function sched(){clearTimeout(tm);tm=setTimeout(update,100);}
+ const mk=(n,l,phi)=>getZ(1401,n,2+p).map(z=>{const f=[z[0],phi*z[0]+Math.sqrt(1-phi*phi)*z[1]];return Array.from({length:p},(_,i)=>l*f[fac[i]]+Math.sqrt(1-l*l)*z[2+i]);});
+ const disc=(L,K,sh)=>{const ts=[];for(let k=1;k<K;k++)ts.push(-1.6+3.2*k/K+sh);return L.map(r=>r.map(v=>{let c=1;ts.forEach(t=>{if(v>t)c++;});return c;}));};
+ const safe=v=>isFinite(v)?v:0;
+ function both(X,n){const Rp=corMat(X).map(r=>r.map(safe));const q=polyMatV(X);return{ml:fitCFA(Rp,n,fac,true),dw:fitDWLS(q.R,q.V,fac,true)};}
+ let cache={key:'',v:null};
+ function update(){
+  const n=sn.get(),K=sK.get(),sh=ss.get(),l=sl.get(),phi=sf.get();
+  const L=mk(n,l,phi),X=disc(L,K,sh);const {ml,dw}=both(X,n);
+  const c=chart(bA,{ar:.75,label:'Cargas estimadas por item e estimador'});
+  c.dom(0,p,0,1).axes(Array.from({length:p},(_,i)=>i+.5),[0,.25,.5,.75,1],'Item','Carga padronizada',v=>labs[Math.round(v-.5)],v=>fn(v,2));
+  c.hline(l,'ref');c.text(p,l,`verdadeira = ${fn(l)}`,'lb2','end',-4,-5);
+  for(let i=0;i<p;i++){c.dot(i+.35,ml.lam[i],5,'dt f2');c.dot(i+.65,dw.lam[i],5,'dt f1');}
+  c.legend([['f2','ML sobre Pearson (como contínuo)','dot'],['f1','DWLS sobre policóricas','dot']],'br');
+  const key=[n,sh,l,phi].join('|');if(cache.key!==key){const ks=[2,3,5,7],a=[],b=[];ks.forEach(k=>{const r=both(disc(L,k,sh),n);a.push(mean(r.ml.lam));b.push(mean(r.dw.lam));});cache={key,v:{ks,a,b}};}
+  const {ks,a,b}=cache.v;
+  const c2=chart(bB,{ar:.75,label:'Carga média estimada em função do número de categorias'});
+  c2.dom(1.5,7.5,Math.min(.3,...a)-.05,Math.max(l,...b)+.1).axes(ks,[.3,.4,.5,.6,.7,.8].filter(v=>v>=Math.min(.3,...a)-.05&&v<=Math.max(l,...b)+.1),'Número de categorias','Carga média',v=>fn(v,0),v=>fn(v,1));
+  c2.hline(l,'ref');c2.line(ks.map((k,i)=>[k,a[i]]),'ln s2');c2.line(ks.map((k,i)=>[k,b[i]]),'ln s1');ks.forEach((k,i)=>{c2.dot(k,a[i],4,'dt f2');c2.dot(k,b[i],4,'dt f1');});c2.vline(K,'ref2');
+  c2.legend([['s2','ML sobre Pearson'],['s1','DWLS sobre policóricas']],'br');
+  const mm=mean(ml.lam),md=mean(dw.lam);
+  bT.innerHTML=`<table class="tbl"><thead><tr><th>Estimador</th><th>Carga média</th><th>Viés da carga</th><th>φ estimado</th><th>Viés de φ</th></tr></thead><tbody><tr><td>Verdadeiro</td><td>${fn(l)}</td><td>—</td><td>${fn(phi)}</td><td>—</td></tr><tr><td>ML sobre Pearson (tratando como contínuo)</td><td>${fn(mm)}</td><td>${fn((mm-l)/l*100,0)}%</td><td>${fn(ml.phi)}</td><td>${fn((ml.phi-phi)/phi*100,0)}%</td></tr><tr><td>DWLS sobre policóricas</td><td>${fn(md)}</td><td>${fn((md-l)/l*100,0)}%</td><td>${fn(dw.phi)}</td><td>${fn((dw.phi-phi)/phi*100,0)}%</td></tr></tbody></table><p class="cap">Os pesos do DWLS são o inverso de uma variância aproximada de cada correlação policórica (informação da verossimilhança bivariada, com limiares fixos). Testes de ajuste robustos (“MV”) e erros-padrão não são calculados aqui: use o software (por exemplo, lavaan com <i>estimator = "WLSMV"</i>).</p>`;
+  ctx.read(`Com ${K} categorias e assimetria ${fn(sh)}: carga média = <b>${fn(mm)}</b> pelo ML sobre Pearson contra <b>${fn(md)}</b> pelo DWLS (verdadeira ${fn(l)}). φ estimado = <b>${fn(ml.phi)}</b> (ML) e <b>${fn(dw.phi)}</b> (DWLS); verdadeiro ${fn(phi)}.${(l-mm)/l>.06?' <span class="wr">Tratar as categorias como contínuas subestima as cargas nesta configuração.</span>':' <span class="ok">Aqui os dois estimadores concordam bastante: tratar como contínuo é aceitável.</span>'}`);
+  ctx.apa(`Os itens (${K} categorias de resposta) foram tratados como ordinais. O modelo de dois fatores correlacionados foi estimado por mínimos quadrados ponderados diagonais (DWLS) sobre a matriz de correlações policóricas (<i>N</i> = ${n}), procedimento que corresponde às estimativas pontuais do estimador WLSMV. As cargas padronizadas tiveram média de ${ap(md)} e a correlação entre fatores foi ${ap(dw.phi)}. Estatísticas de ajuste robustas (CFI, TLI e RMSEA escalonados) devem ser obtidas no software de análise.`);
+ }
+ return{update};},
+exp:['Escolha 2 categorias e assimetria +0,75: o ML sobre Pearson subestima as cargas e φ; o DWLS recupera as cargas.','Com 7 categorias e assimetria 0, os dois estimadores quase coincidem: tratar como contínuo é aceitável.','Mantenha 4 categorias e aumente a assimetria: o viés do ML cresce.','Reduza n para 200: o DWLS continua em torno das cargas verdadeiras, com mais variação entre os itens.'],
+defs:`<dl class="defs"><dt>ML sobre Pearson (“tratar como contínuo”)</dt><dd>Supõe variáveis contínuas com distribuição normal multivariada. Com poucas categorias e respostas assimétricas, subestima cargas, infla o χ² e distorce erros-padrão.</dd>
+<dt>WLS (ADF)</dt><dd>Usa a inversa da matriz de covariâncias assintótica completa das correlações como peso. É consistente sem normalidade, mas exige amostras muito grandes e é instável em modelos com muitos itens.</dd>
+<dt>DWLS</dt><dd>Mínimos quadrados ponderados <b>diagonais</b>: minimiza <span class="fx">Σ (r<sub>ij</sub> − σ<sub>ij</sub>(θ))² / v<sub>ij</sub></span> sobre as correlações policóricas, em que v<sub>ij</sub> é a variância assintótica de cada correlação. Só a diagonal é usada, o que o torna estável.</dd>
+<dt>WLSMV</dt><dd>Estimativas do DWLS, mais erros-padrão robustos e um qui-quadrado ajustado por média e variância (Muthén, du Toit e Spisic, 1997). É o estimador usual para itens ordinais (no lavaan: <i>estimator = "WLSMV"</i> com <i>ordered</i>).</dd>
+<dt>Quando usar</dt><dd>Itens com poucas categorias (em geral, até 4 ou 5) e/ou respostas assimétricas. Em simulações, com cinco ou mais categorias e limiares aproximadamente simétricos, o ML robusto costuma funcionar bem (Rhemtulla, Brosseau-Liard e Savalei, 2012).</dd>
+<dt>Cautelas</dt><dd>Amostras de algumas centenas ou mais; atenção a células vazias nas tabelas cruzadas. Os índices de ajuste do WLSMV não têm os mesmos pontos de corte do ML: o comportamento depende de categorias, limiares e estimador (Xia e Yang, 2019), então interprete com cuidado.</dd>
+<dt>Exemplo em R (lavaan)</dt><dd><pre><code>library(lavaan)
+modelo &lt;- 'f1 =~ i1 + i2 + i3 + i4
+           f2 =~ i5 + i6 + i7 + i8'
+fit &lt;- cfa(modelo, data = dados,
+           ordered = names(dados), estimator = "WLSMV")
+summary(fit, fit.measures = TRUE, standardized = TRUE)</code></pre></dd></dl>`,
+prac:'Num inventário de depressão com 4 categorias e respostas concentradas nas categorias baixas, a AFC por ML sobre Pearson tende a produzir cargas modestas e correlações entre fatores atenuadas. Reanalisar com WLSMV costuma elevar as cargas e mudar a leitura da validade estrutural; relate o estimador, as categorias e a matriz usada.',
+quiz:[
+{q:'Itens de 3 categorias, com respostas assimétricas. Qual abordagem tende a produzir cargas menos enviesadas?',o:['ML sobre a matriz de Pearson','DWLS/WLSMV sobre a matriz policórica','Qualquer uma, o resultado é o mesmo','Excluir os itens assimétricos'],a:1,why:'Estimadores para dados ordinais usam a matriz policórica, que corrige a atenuação causada pela categorização.'},
+{q:'O que o “MV” do WLSMV acrescenta ao DWLS?',o:['Mais categorias de resposta','Erros-padrão robustos e qui-quadrado ajustado pela média e variância','Normalidade multivariada','Pesos iguais para todas as correlações'],a:1,why:'As estimativas vêm do DWLS; o “MV” se refere às correções robustas dos erros-padrão e do teste de ajuste.'},
+{q:'Por que o WLS completo (ADF) é pouco usado com escalas longas?',o:['Porque supõe normalidade','Porque exige a matriz de pesos completa, o que pede amostras enormes e é instável','Porque só funciona com itens contínuos','Porque ignora os limiares'],a:1,why:'O DWLS surgiu justamente para evitar a inversão da matriz completa, usando apenas a diagonal.'}]});
+
+/* 10 — Invariância de medida entre grupos */
+MODS.push({id:'invariancia',u:2,title:'Invariância de medida entre grupos',
+lead:'Comparar médias de homens e mulheres, de turmas ou de países só faz sentido se a escala mede o mesmo construto, do mesmo jeito, nos grupos. A AFC multigrupo testa isso em degraus: configural, métrica e escalar. Você controla onde a escala “falha” e vê o teste reagir.',
+pre:'Pré-requisitos: módulo 9 (AFC e índices de ajuste). Aqui: 1 fator, 6 itens contínuos e 2 grupos; as médias dos itens entram no modelo.',
+build(ctx){
+ const p=6,labs=['I1','I2','I3','I4','I5','I6'];
+ const sn=slider(ctx.ctl,{label:'Participantes por grupo (n)',min:100,max:1000,step:50,val:400,dec:0},()=>sched());
+ const sk=slider(ctx.ctl,{label:'Diferença real de médias latentes (B − A, em DP)',min:0,max:1,step:.05,val:.5},()=>sched());
+ const sl=slider(ctx.ctl,{label:'Carga do item 3 menor no grupo B (Δλ)',min:0,max:.4,step:.05,val:0},()=>sched());
+ const st=slider(ctx.ctl,{label:'Intercepto do item 3 maior no grupo B (Δτ)',min:0,max:.6,step:.05,val:0},()=>sched());
+ const ck=check(ctx.ctl,'Invariância parcial: liberar o item 3 entre os grupos',false,()=>sched());
+ const bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch),bL=el('div',{class:'cbox'},ctx.ch),bM=el('div',{class:'cbox'},ctx.ch);
+ let tm=null;function sched(){clearTimeout(tm);tm=setTimeout(update,70);}
+ function gen(n,seed,lam,tau,kap){const Z=getZ(seed,n,1+p);return Z.map(z=>lam.map((l,i)=>tau[i]+l*(kap+z[0])+Math.sqrt(.5)*z[1+i]));}
+ function update(){
+  const n=sn.get(),kap=sk.get(),dl=sl.get(),dt=st.get(),part=ck.get();
+  const lamA=new Array(p).fill(.7),lamB=lamA.slice();lamB[2]-=dl;const tauA=new Array(p).fill(0),tauB=tauA.slice();tauB[2]+=dt;
+  const gA=grpStats(gen(n,1101,lamA,tauA,0)),gB=grpStats(gen(n,1102,lamB,tauB,kap));const free=part?[2]:[];
+  const F=[0,1,2].map(k=>mgFit(gA,gB,mgSpec(p,k,free)));const N=2*n;
+  let h='<table class="tbl"><thead><tr><th>Modelo</th><th>χ²(gl)</th><th>CFI</th><th>RMSEA</th><th>ΔCFI</th><th>ΔRMSEA</th><th>Δχ² (p)</th><th>Leitura</th></tr></thead><tbody>';
+  const names=['Configural','Métrico (cargas iguais)','Escalar (cargas e interceptos iguais)'];const ok=[F[0].cfi>=.95&&F[0].rmsea<=.08,false,false];
+  F.forEach((f,k)=>{let dc='—',dr='—',dp='—',lt='<span class="'+(ok[0]?'ok':'no')+'">'+(ok[0]?'✓ plausível':'✗ não se sustenta')+'</span>';
+   if(k>0){const g=F[k-1];const d1=f.cfi-g.cfi,d2=f.rmsea-g.rmsea;ok[k]=ok[k-1]&&d1>=-.01;dc=fn(d1,3);dr=fn(d2,3);dp=fn(f.chi-g.chi,1)+' ('+fpv(chi2sf(Math.max(f.chi-g.chi,0),f.df-g.df)).replace('= ','')+')';lt='<span class="'+(d1>=-.01?'ok':'no')+'">'+(d1>=-.01?'✓ mantida':'✗ rejeitada')+'</span>';}
+   h+=`<tr><td>${names[k]}</td><td>${fn(f.chi,1)} (${f.df})</td><td>${fn(f.cfi,3)}</td><td>${fn(f.rmsea,3)}</td><td>${dc}</td><td>${dr}</td><td>${dp}</td><td>${lt}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">${part?'Item 3 liberado nos modelos métrico e escalar (invariância parcial). ':''}Critério usado: queda do CFI maior que 0,010 indica rejeição (Cheung e Rensvold, 2002). ΔRMSEA e Δχ² complementam, mas o Δχ² é sensível ao n.</p>`;bT.innerHTML=h;
+  const u0=F[0].u;const c=chart(bL,{ar:.75,label:'Cargas fatoriais por grupo no modelo configural'});
+  c.dom(0,p,0,1).axes(Array.from({length:p},(_,i)=>i+.5),[0,.25,.5,.75,1],'Item','Carga (modelo configural)',v=>'I'+Math.round(v+.5),v=>fn(v,2));
+  for(let i=0;i<p;i++){c.seg(i+.38,u0.lA[i],i+.62,u0.lB[i],'ref2');c.dot(i+.38,u0.lA[i],5,'dt f1');c.dot(i+.62,u0.lB[i],5,'dt f2');}c.legend([['f1','Grupo A','dot'],['f2','Grupo B','dot']],'br');
+  const u2=F[2].u;const dm=gB.m.map((v,i)=>v-gA.m[i]),im=u2.lB.map((l,i)=>l*u2.kap+(u2.tB[i]-u2.tA[i]));
+  const lo=Math.min(0,...dm,...im)-.1,hi=Math.max(...dm,...im)+.1;const c2=chart(bM,{ar:.75,label:'Diferença de médias dos itens entre os grupos'});
+  c2.dom(0,p,lo,hi).axes(Array.from({length:p},(_,i)=>i+.5),[0,.2,.4,.6,.8].filter(v=>v>=lo&&v<=hi),'Item','Diferença de médias (B − A)',v=>'I'+Math.round(v+.5),v=>fn(v,1));
+  dm.forEach((d,i)=>c2.rect(i+.2,0,i+.8,d,'bar f1'));c2.hline(0,'ref2');im.forEach((v,i)=>{c2.seg(i+.12,v,i+.88,v,'ln s2 thick');});c2.legend([['f1','Observada','dot'],['s2 thick','Implicada pelo modelo escalar']],'tr');
+  const lvl=ok[2]?'escalar':ok[1]?'métrica':ok[0]?'configural':'nenhum';
+  ctx.read(`Nível de invariância sustentado: <b>${lvl}</b>. ${ok[2]?`Com invariância escalar, comparar médias latentes é justificável: κ̂ (B − A) = <b>${fn(u2.kap)}</b> DP, variância do fator em B = ${fn(u2.psi)}.`:ok[1]?'<span class="wr">Cargas equivalentes, mas interceptos não: diferenças nas médias observadas podem refletir viés do item e não diferença real no construto.</span>':ok[0]?'<span class="no">As cargas diferem entre os grupos: o item não se relaciona com o construto do mesmo jeito.</span>':'<span class="no">A estrutura não se sustenta nem como configural.</span>'}${!ok[0]&&n<=150?' <span class="wr">Com poucos participantes por grupo o RMSEA fica instável e pode rejeitar até estruturas corretas: aumente n.</span>':''}${(dl>0||dt>0)&&!part?' Dica: marque “invariância parcial” para liberar o item 3 e veja o ajuste voltar.':''}`);
+  ctx.apa(`Testou-se a invariância de medida por AFC multigrupo (máxima verossimilhança; ${n} participantes por grupo). O modelo configural apresentou ${ok[0]?'ajuste adequado':'ajuste insatisfatório'} (χ²(${F[0].df}) = ${fn(F[0].chi,1)}; CFI = ${ap(F[0].cfi,3)}; RMSEA = ${ap(F[0].rmsea,3)}). A restrição das cargas (invariância métrica) produziu ΔCFI = ${ap(F[1].cfi-F[0].cfi,3)}, e a restrição adicional dos interceptos (invariância escalar), ΔCFI = ${ap(F[2].cfi-F[1].cfi,3)}, adotando-se o critério de ΔCFI ≥ −,010 (Cheung &amp; Rensvold, 2002). Concluiu-se por invariância ${lvl==='nenhum'?'não sustentada':lvl}${part?', com o item 3 livre (invariância parcial)':''}.`);
+ }
+ return{update};},
+exp:['Deixe tudo em zero e κ = 0,5: os três modelos ajustam e a invariância escalar se sustenta, apesar da diferença real de médias.','Aumente Δλ para 0,30: a invariância métrica cai (ΔCFI negativo), e o gráfico de cargas mostra o item 3 diferente.','Zere Δλ e aumente Δτ para 0,5: a métrica passa, mas a escalar cai; no gráfico de médias, o item 3 foge da linha implicada.','Com a falha ligada, marque “invariância parcial”: liberar um único item recupera o ajuste.'],
+defs:`<dl class="defs"><dt>Invariância configural</dt><dd>Mesma estrutura (mesmos itens no mesmo fator) em todos os grupos, com parâmetros livres. É o ponto de partida.</dd>
+<dt>Invariância métrica (fraca)</dt><dd>Cargas fatoriais iguais. Permite comparar relações do construto com outras variáveis (correlações, regressões) entre os grupos.</dd>
+<dt>Invariância escalar (forte)</dt><dd>Cargas e interceptos iguais. É a condição para <b>comparar médias</b> entre grupos. Sem ela, uma diferença de médias pode ser viés do item.</dd>
+<dt>Invariância estrita</dt><dd>Inclui variâncias residuais iguais; não testada aqui e raramente necessária.</dd>
+<dt>Critérios de decisão</dt><dd>Queda do CFI maior que 0,010 (Cheung e Rensvold, 2002) e aumento do RMSEA maior que 0,015 (Chen, 2007) sugerem não invariância. O Δχ² é muito sensível ao tamanho da amostra.</dd>
+<dt>Invariância parcial</dt><dd>Libera poucos parâmetros (em geral, uma minoria dos itens) para que o restante permita a comparação (Byrne, Shavelson e Muthén, 1989). Deve ter respaldo teórico.</dd>
+<dt>Relação com o DIF</dt><dd>A não invariância de cargas e interceptos de um item equivale ao DIF não uniforme e uniforme da TRI (módulo 13).</dd>
+<dt>Itens ordinais</dt><dd>Em escalas Likert, o procedimento correto usa modelos para dados categóricos (por exemplo, WLSMV, com limiares); este módulo usa itens contínuos para simplificar (veja o módulo 10).</dd></dl>`,
+prac:'Ao comparar sintomas depressivos entre homens e mulheres, se o item “choro frequente” tem intercepto maior nas mulheres para o mesmo nível de depressão, uma diferença de médias na escala pode refletir o item, e não mais depressão. O teste escalar localiza isso, e a invariância parcial permite seguir comparando com o item liberado e discutido.',
+quiz:[
+{q:'Qual nível de invariância é necessário para comparar médias de um construto entre grupos?',o:['Configural','Métrica','Escalar (cargas e interceptos iguais)','Nenhum, médias sempre podem ser comparadas'],a:2,why:'Só com interceptos iguais (além das cargas) uma diferença de médias dos escores pode ser atribuída ao construto e não a viés dos itens.'},
+{q:'O que a invariância métrica afirma?',o:['Que os grupos têm a mesma média no construto','Que as cargas fatoriais são iguais entre os grupos','Que as variâncias residuais são iguais','Que o α é igual entre os grupos'],a:1,why:'Cargas iguais significam que a relação entre cada item e o construto tem a mesma intensidade nos grupos.'},
+{q:'No teste escalar, ΔCFI = −0,03. Qual a conduta mais adequada?',o:['Comparar as médias assim mesmo','Descartar a escala','Identificar quais interceptos diferem e, com justificativa teórica, considerar invariância parcial','Aumentar a amostra até o Δχ² ficar não significativo'],a:2,why:'Há indício de viés em algum item. Localize-o (por exemplo, pela diferença entre médias observadas e implicadas) e avalie a invariância parcial.'}]});
+
+/* 12 — Modelo bifatorial e ômega hierárquico */
+MODS.push({id:'bifatorial',u:2,title:'Modelo bifatorial e ômega hierárquico',
+lead:'Muitas escalas têm um fator geral e subescalas. Será que o escore total mede um só construto, ou as subescalas têm vida própria? O modelo bifatorial separa a variância geral da específica, e o ômega hierárquico diz quanto do escore total é, de fato, geral.',
+pre:'Pré-requisitos: módulos 3 (alfa e ômega) e 9 (AFC). Aqui: 12 itens contínuos, um fator geral e 2 a 4 fatores específicos, todos ortogonais; estimação por máxima verossimilhança.',
+build(ctx){
+ const p=12;
+ const sn=slider(ctx.ctl,{label:'Tamanho da amostra (n)',min:200,max:1000,step:100,val:500,dec:0},()=>sched());
+ const sg=slider(ctx.ctl,{label:'Carga no fator geral (λg)',min:.2,max:.8,step:.05,val:.6},()=>sched());
+ const ss=slider(ctx.ctl,{label:'Carga no fator específico (λs)',min:.1,max:.7,step:.05,val:.4},()=>sched());
+ const sG=slider(ctx.ctl,{label:'Número de subescalas (fatores específicos)',min:2,max:4,step:1,val:3,dec:0},()=>sched());
+ const bL=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll'},ctx.ch);
+ let tm=null;function sched(){clearTimeout(tm);tm=setTimeout(update,70);}
+ function update(){
+  const n=sn.get(),lg=sg.get(),lsReq=ss.get(),ls=Math.min(lsReq,Math.sqrt(.95-lg*lg)),G=sG.get(),per=p/G;
+  const grp=Array.from({length:p},(_,i)=>Math.floor(i/per));
+  const R=Array.from({length:p},(_,i)=>Array.from({length:p},(_,j)=>i===j?1:lg*lg+(grp[i]===grp[j]?ls*ls:0)));
+  const X=sampleFromR(R,n,getZ(1301,n,p));const S=corMat(X);
+  const f=fitBifactor(S,n,grp),f1=fitCFA(S,n,new Array(p).fill(0),false),al=cronbach(X);
+  const c=chart(bL,{ar:.75,label:'Cargas estimadas no fator geral e no fator específico, por item'});
+  const mx=Math.max(.8,...f.g.map(Math.abs),...f.s.map(Math.abs));
+  c.dom(0,p,Math.min(0,...f.s,...f.g)-.02,Math.min(1,mx+.05)).axes(Array.from({length:p},(_,i)=>i+.5),[0,.2,.4,.6,.8],'Item','Carga estimada',v=>String(Math.round(v+.5)),v=>fn(v,1));
+  for(let i=0;i<p;i++){c.rect(i+.08,0,i+.48,f.g[i],'bar f1');c.rect(i+.52,0,i+.92,f.s[i],'bar f2');}
+  c.legend([['f1','Geral','dot'],['f2','Específico','dot']],'tr');
+  let h='<table class="tbl"><thead><tr><th>Subescala</th><th>Itens</th><th>ω total</th><th>ω geral (na subescala)</th><th>ω específico (sem o geral)</th></tr></thead><tbody>';
+  f.sub.forEach((s,k)=>{h+=`<tr><td>${k+1}</td><td>${grp.map((g,i)=>g===k?i+1:null).filter(v=>v).join(', ')}</td><td>${fn(s.omT)}</td><td>${fn(s.omG)}</td><td>${fn(s.omS)}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">Ajuste: bifatorial CFI = ${fn(f.cfi,3)}, RMSEA = ${fn(f.rmsea,3)} · um fator CFI = ${fn(f1.cfi,3)}, RMSEA = ${fn(f1.rmsea,3)}. O ω específico mostra se a subescala mede algo além do fator geral: valores baixos desaconselham interpretá-la isoladamente.</p>`;bT.innerHTML=h;
+  const hw=f.heywood?' <span class="wr">Atenção: solução no limite (cargas muito altas ou variância residual próxima de zero, o chamado caso de Heywood). Os coeficientes são instáveis; com poucas subescalas, o bifatorial costuma ser mal identificado.</span>':'';
+  const verdict=f.omH>=.8&&f.ecv>=.7?'O fator geral domina: o escore total é bem interpretável como medida de um construto geral.':f.omH<.6?'Boa parte da variância do total vem dos fatores específicos: interpretar o escore total como medida de um só construto é arriscado.':'Situação intermediária: o escore total é razoavelmente geral, mas as subescalas carregam variância própria.';
+  ctx.read(`ω total = <b>${fn(f.omT)}</b> · ω hierárquico (ωH) = <b>${fn(f.omH)}</b> · ECV = <b>${fn(f.ecv)}</b> · α = <b>${fn(al)}</b>. ${verdict}${ls<lsReq-1e-9?` <span class="wr">λs limitado a ${fn(ls,2)}: com λg = ${fn(lg,2)}, cargas maiores deixariam variância residual negativa.</span>`:''}${hw}`);
+  ctx.apa(`Um modelo bifatorial (um fator geral e ${G} fatores específicos ortogonais) foi estimado por máxima verossimilhança (<i>N</i> = ${n}) e mostrou ajuste melhor que o modelo unifatorial (CFI = ${ap(f.cfi)} vs. ${ap(f1.cfi)}; RMSEA = ${ap(f.rmsea)} vs. ${ap(f1.rmsea)}). O ômega total foi ω<sub>T</sub> = ${ap(f.omT)} e o ômega hierárquico, ω<sub>H</sub> = ${ap(f.omH)}, ou seja, ${fn(f.omH/f.omT*100,0)}% da variância confiável do escore total é atribuível ao fator geral. A variância comum explicada pelo fator geral (ECV) foi ${ap(f.ecv)}.`);
+ }
+ return{update};},
+exp:['Aumente λs para 0,60 com λg = 0,40: o α continua alto, mas ωH cai bastante; o escore total deixa de ser “geral”.','Reduza λs para 0,20: o modelo unifatorial passa a se ajustar bem e o ωH se aproxima do ω total.','Use 2 subescalas: o bifatorial fica instável (caso de Heywood); com mais fatores específicos a solução se estabiliza.'],
+defs:`<dl class="defs"><dt>Modelo bifatorial</dt><dd>Cada item carrega em um <b>fator geral</b> e em um <b>fator específico</b> (subescala), todos ortogonais. Permite separar quanto da variância de cada item é geral e quanto é específica.</dd>
+<dt>ω total (ωT)</dt><dd>Proporção da variância do escore total atribuível a <i>todos</i> os fatores comuns (geral e específicos).</dd>
+<dt>ω hierárquico (ωH)</dt><dd><span class="fx">ωH = (Σλ<sub>g</sub>)² / Var(total)</span>: proporção da variância do escore total atribuível <i>apenas</i> ao fator geral. Responde se o escore total mede um construto geral (Rodriguez, Reise e Haviland, 2016).</dd>
+<dt>ECV</dt><dd>Variância comum explicada pelo fator geral: <span class="fx">Σλ<sub>g</sub>² / (Σλ<sub>g</sub>² + Σλ<sub>s</sub>²)</span>. Junto com o ωH, ajuda a decidir se uma estrutura multidimensional é “essencialmente unidimensional”.</dd>
+<dt>ω das subescalas</dt><dd>O ω específico remove o fator geral: indica se a subescala traz informação própria. Subescalas com ω específico baixo raramente devem ser interpretadas separadamente.</dd>
+<dt>Cautelas</dt><dd>O bifatorial tende a se ajustar melhor que modelos concorrentes mesmo quando é só excesso de flexibilidade; considere a teoria, a estabilidade das cargas e a replicação. Soluções de Heywood e fatores específicos sem itens com cargas relevantes pedem cautela.</dd></dl>`,
+prac:'Um inventário de ansiedade com 4 subescalas tem α = 0,93 para o total. A análise bifatorial mostra ωH = 0,62 e ω específico de 0,18 a 0,35 nas subescalas: relatar um escore total e evitar interpretar as subescalas isoladamente seria a decisão mais defensável, e a decisão deve ser justificada pela teoria.',
+quiz:[
+{q:'O que o ômega hierárquico (ωH) indica?',o:['A fidedignidade teste-reteste','A proporção da variância do escore total atribuível ao fator geral','A correlação entre subescalas','O número de fatores a reter'],a:1,why:'ωH isola a parte da variância do escore total devida apenas ao fator geral.'},
+{q:'Uma escala tem α alto e ωH baixo. Interpretação mais adequada:',o:['O total é claramente unidimensional','O α alto pode ocultar que boa parte da variância vem de fatores específicos','O modelo bifatorial está errado','A amostra é pequena demais'],a:1,why:'O α mistura variância geral e específica; o ωH as separa.'},
+{q:'Uma subescala tem ω total alto, mas ω específico muito baixo. O que isso sugere?',o:['A subescala é excelente para uso isolado','Sua confiabilidade vem quase toda do fator geral, e ela traz pouca informação própria','O fator geral não existe','Há viés de resposta'],a:1,why:'Sem o fator geral, pouca variância confiável resta na subescala.'},
+{q:'Por que um bom ajuste bifatorial não basta para adotá-lo?',o:['Porque ele nunca se ajusta bem','Porque é flexível e pode se ajustar bem mesmo sem justificativa teórica, com risco de soluções instáveis','Porque exige itens ordinais','Porque não gera coeficientes de fidedignidade'],a:1,why:'A flexibilidade do modelo favorece o ajuste; a decisão requer teoria e estabilidade.'}]});
+/* 9 — TRI */
+MODS.push({id:'tri',u:3,title:'Teoria de Resposta ao Item (modelo 2PL)',
+lead:'Na teoria clássica, a qualidade do teste é resumida em um único coeficiente. Na TRI, cada item tem uma curva que relaciona o traço (θ) à probabilidade de resposta, e a precisão varia ao longo do traço. Edite os itens e veja a curva, a informação e o DIF.',
+pre:'Pré-requisitos: módulos 1 e 2. Aqui usamos o modelo logístico de dois parâmetros (2PL) para itens dicotômicos.',
+build(ctx){
+ const items=[{a:1.2,b:-1.5},{a:1,b:-.5},{a:1.5,b:0},{a:.8,b:.7},{a:1.8,b:1.4}];const cl=['s1','s2','s3','s4','s1 dash'],fl=['f1','f2','f3','f4','f1'];
+ const act=radios(ctx.ctl,'Item em edição',items.map((_,i)=>[i,'Item '+(i+1)]),2,()=>{sync();update();});
+ const sa=slider(ctx.ctl,{label:'Discriminação (a)',min:.3,max:3,step:.1,val:1.5,dec:1},v=>{items[act.get()].a=v;update();});
+ const sb=slider(ctx.ctl,{label:'Dificuldade (b)',min:-3,max:3,step:.1,val:0,dec:1},v=>{items[act.get()].b=v;update();});
+ const st=slider(ctx.ctl,{label:'Traço da pessoa (θ)',min:-3,max:3,step:.1,val:0,dec:1},()=>update());
+ const dif=check(ctx.ctl,'Mostrar DIF: comparar dois grupos no item em edição',false,()=>update());
+ const sdb=slider(ctx.ctl,{label:'DIF uniforme: diferença em b (grupo B − A)',min:-1.5,max:1.5,step:.1,val:.6,dec:1},()=>update());
+ const sda=slider(ctx.ctl,{label:'DIF não uniforme: diferença em a',min:-.8,max:.8,step:.1,val:0,dec:1},()=>update());
+ const bI=el('div',{class:'cbox'},ctx.ch),bF=el('div',{class:'cbox'},ctx.ch),bD=el('div',{class:'cbox'},ctx.ch);
+ function sync(){const it=items[act.get()];sa.set(it.a);sb.set(it.b);}
+ const grid=[];for(let t=-4;t<=4.0001;t+=.1)grid.push(+t.toFixed(2));
+ function update(){
+  const k=act.get(),it=items[k],th=st.get(),showD=dif.get();sdb.el.disabled=sda.el.disabled=!showD;bD.style.display=showD?'':'none';
+  const c=chart(bI,{ar:.75,label:'Curvas características dos itens'});c.dom(-4,4,0,1).axes([-4,-3,-2,-1,0,1,2,3,4],[0,.25,.5,.75,1],'Traço (θ)','P(resposta correta)',v=>fn(v,0),v=>fn(v,2));
+  items.forEach((x,i)=>c.line(grid.map(t=>[t,P2pl(t,x.a,x.b)]),'ln '+cl[i]+(i===k?' thick':' thin')));c.vline(th,'ref2');items.forEach((x,i)=>c.dot(th,P2pl(th,x.a,x.b),4,'dt '+fl[i]));
+  c.legend(items.map((_,i)=>[cl[i],'Item '+(i+1)]),'br');
+  const tif=grid.map(t=>[t,sum(items.map(x=>info2pl(t,x.a,x.b)))]);const ymax=Math.max(1,Math.ceil(Math.max(...tif.map(p=>p[1]))));
+  const c2=chart(bF,{ar:.75,label:'Função de informação do teste'});c2.dom(-4,4,0,ymax).axes([-4,-3,-2,-1,0,1,2,3,4],Array.from({length:ymax+1},(_,i)=>i),'Traço (θ)','Informação');
+  c2.area(tif,0,'ar f1');c2.line(tif,'ln s1');c2.line(grid.map(t=>[t,info2pl(t,it.a,it.b)]),'ln s2 dash');c2.vline(th,'ref2');
+  c2.legend([['s1','Teste (soma dos itens)'],['s2 dash','Item '+(k+1)]],'tr');
+  const I=sum(items.map(x=>info2pl(th,x.a,x.b))),se=1/Math.sqrt(I),Ps=items.map(x=>P2pl(th,x.a,x.b));
+  let difTxt='';
+  if(showD){const dB={a:Math.max(.2,it.a+sda.get()),b:it.b+sdb.get()};
+   const c3=chart(bD,{ar:.75,label:'DIF: curvas dos grupos A e B'});c3.dom(-4,4,0,1).axes([-4,-3,-2,-1,0,1,2,3,4],[0,.25,.5,.75,1],'Traço (θ)','P(resposta correta)',v=>fn(v,0),v=>fn(v,2));
+   c3.line(grid.map(t=>[t,P2pl(t,it.a,it.b)]),'ln s1 thick');c3.line(grid.map(t=>[t,P2pl(t,dB.a,dB.b)]),'ln s2 thick dash');c3.vline(th,'ref2');
+   c3.legend([['s1','Grupo A'],['s2 dash','Grupo B']],'br');
+   let w=0,wt=0,cross=false,prev=null;grid.forEach(t=>{const d=P2pl(t,it.a,it.b)-P2pl(t,dB.a,dB.b);const g=normPdf(t);w+=Math.abs(d)*g;wt+=g;if(prev!==null&&d*prev<0)cross=true;prev=d;});
+   const diff=w/wt;const tipo=Math.abs(sda.get())<.05?(Math.abs(sdb.get())<.05?'sem DIF':'DIF uniforme'):(cross?'DIF não uniforme (curvas se cruzam)':'DIF com diferença em a e b');
+   difTxt=`<br>DIF no item ${k+1}: diferença média ponderada entre as curvas = <b>${fn(diff,3)}</b> (${tipo}). Em θ = ${fn(th,1)}: P(A) = ${fn(P2pl(th,it.a,it.b))} e P(B) = ${fn(P2pl(th,dB.a,dB.b))}.`;}
+  ctx.read(`Em θ = <b>${fn(th,1)}</b>: P(acerto) por item = ${Ps.map((p,i)=>`I${i+1} <b>${fn(p)}</b>`).join(' · ')}. Escore esperado = <b>${fn(sum(Ps))}</b> de ${items.length}. Informação do teste = <b>${fn(I)}</b>, erro padrão do traço = <b>${fn(se)}</b> (fidedignidade local aproximada, 1 − EP², = <b>${fn(1-se*se)}</b> para θ ~ N(0, 1)).${difTxt}`);
+  ctx.apa(`Ajustou-se o modelo logístico de dois parâmetros a ${items.length} itens dicotômicos. As discriminações (<i>a</i>) variaram de ${fn(Math.min(...items.map(x=>x.a)),1)} a ${fn(Math.max(...items.map(x=>x.a)),1)} e as dificuldades (<i>b</i>), de ${fn(Math.min(...items.map(x=>x.b)),1)} a ${fn(Math.max(...items.map(x=>x.b)),1)}. A informação do teste foi máxima em θ = ${fn(tif.reduce((m,p)=>p[1]>m[1]?p:m)[0],1)}, com valor de ${fn(Math.max(...tif.map(p=>p[1])),2)}; em θ = ${fn(th,1)}, o erro padrão do traço foi ${fn(se,2)}.${showD?` O item ${k+1} foi avaliado quanto a DIF entre dois grupos (Δ<i>b</i> = ${fn(sdb.get(),1)}; Δ<i>a</i> = ${fn(sda.get(),1)}).`:''}`);
+ }
+ sync();return{update};},
+exp:['Aumente a (discriminação) do item em edição: a curva fica íngreme e a informação se concentra em torno de b.','Mova todos os b para valores altos: o teste só mede bem quem está no alto do traço.','Ative o DIF com Δb = 0,6: pessoas com o mesmo θ têm probabilidades diferentes de acertar, conforme o grupo.','Ative Δa ≠ 0: as curvas se cruzam e o DIF depende do nível do traço (não uniforme).'],
+defs:`<dl class="defs"><dt>Modelo 2PL</dt><dd><span class="fx">P(θ) = 1 / (1 + e<sup>−a(θ − b)</sup>)</span>. O parâmetro <i>b</i> é o traço em que a probabilidade é 0,50; <i>a</i> é a inclinação (discriminação).</dd>
+<dt>Informação do item</dt><dd><span class="fx">I(θ) = a²·P(θ)·[1 − P(θ)]</span>. Máxima em θ = b e proporcional a a².</dd>
+<dt>Informação do teste e erro padrão</dt><dd><span class="fx">I<sub>T</sub>(θ) = ΣI<sub>i</sub>(θ)</span> e <span class="fx">EP(θ) = 1/√I<sub>T</sub>(θ)</span>. A precisão varia ao longo do traço, diferentemente do EPM único da teoria clássica.</dd>
+<dt>Outros modelos</dt><dd>1PL/Rasch (a fixo), 3PL (inclui acerto ao acaso) e modelos politômicos (resposta graduada) para escalas Likert.</dd>
+<dt>DIF</dt><dd>Funcionamento diferencial do item: pessoas de grupos distintos e com o mesmo traço têm probabilidades diferentes de responder. Uniforme: diferença em b. Não uniforme: diferença em a.</dd></dl>`,
+prac:'Um teste de rastreio de depressão deve ser preciso na faixa do traço em que estão as decisões. Se os itens se concentram em níveis baixos de θ, a precisão é boa para identificar sintomas leves e ruim para distinguir gravidade alta. A TRI mostra isso; o α, não. Ao adaptar um teste para outro grupo, itens com DIF devem ter o conteúdo revisado e, se necessário, ser removidos ou tratados.',
+quiz:[
+{q:'No modelo 2PL, qual a probabilidade de resposta correta quando θ = b?',o:['0','0,25','0,50','1'],a:2,why:'Por definição, b é o ponto do traço em que a probabilidade é 0,50.'},
+{q:'A informação de um item no 2PL é máxima:',o:['Sempre em θ = 0','Em θ = b','Em θ = −3','Quando a = 0'],a:1,why:'I(θ) = a²PQ, e PQ é máximo (0,25) quando P = 0,5, isto é, em θ = b.'},
+{q:'O que é DIF?',o:['Itens difíceis demais','Pessoas de grupos diferentes e com o mesmo traço têm probabilidades distintas de acertar o item','Itens com discriminação zero','Erro aleatório de medida'],a:1,why:'O DIF indica que o item funciona de modo diferente entre grupos, ao se controlar o nível do traço.'}]});
+
+/* 10 — Normas e escores padronizados */
+/* 14 — DIF inferencial (regressão logística) */
+MODS.push({id:'dif',u:3,title:'DIF: detecção inferencial por regressão logística',
+lead:'Um item tem funcionamento diferencial (DIF) quando pessoas com o mesmo nível do traço, mas de grupos diferentes, têm probabilidades diferentes de acertar. Aqui você simula DIF em um item e testa com regressão logística, separando DIF de uma simples diferença real entre grupos (impacto).',
+pre:'Pré-requisitos: módulo 13 (TRI) e noções de regressão logística. Aqui: 10 itens dicotômicos, DIF simulado só no item 5; o escore total é a variável de pareamento.',
+build(ctx){
+ const K=10,st=4,bs=[-1.5,-1,-.5,0,.5,1,-.25,.25,1.25,-.75],NM=2000;
+ const r=mulberry32(2024),UR=Array.from({length:2*NM},()=>Array.from({length:K},()=>r())),ZT=getZ(2025,2*NM,1);
+ const sn=slider(ctx.ctl,{label:'Participantes por grupo (n)',min:200,max:2000,step:100,val:800,dec:0},()=>sched());
+ const sb=slider(ctx.ctl,{label:'DIF uniforme: item 5 mais difícil no grupo focal (Δb)',min:0,max:1.5,step:.1,val:1,dec:1},()=>sched());
+ const sa=slider(ctx.ctl,{label:'DIF não uniforme: discriminação do item 5 menor no grupo focal (Δa)',min:0,max:.8,step:.1,val:0,dec:1},()=>sched());
+ const si=slider(ctx.ctl,{label:'Impacto: diferença real de habilidade (focal − referência, em DP)',min:0,max:1,step:.1,val:.5,dec:1},()=>sched());
+ const ch_=check(ctx.ctl,'Corrigir para múltiplos testes (Holm)',true,()=>sched());
+ const bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch),bL=el('div',{class:'cbox'},ctx.ch);
+ let tm=null;function sched(){clearTimeout(tm);tm=setTimeout(update,70);}
+ function update(){
+  const n=sn.get(),db=sb.get(),da=sa.get(),imp=si.get(),corr=ch_.get();
+  const grp=[],U=[];
+  for(let g=0;g<2;g++)for(let i=0;i<n;i++){const idx=g*NM+i,th=ZT[idx][0]-(g?imp:0);grp.push(g);
+   U.push(bs.map((b0,k)=>{let a=1.2,b=b0;if(k===st&&g){b+=db;a=Math.max(a-da,.2);}return UR[idx][k]<1/(1+Math.exp(-a*(th-b)))?1:0;}));}
+  const tot=U.map(u=>u.reduce((a,b)=>a+b,0)),m=mean(tot),sd_=sd(tot)||1,z=tot.map(v=>(v-m)/sd_);
+  const res=bs.map((_,k)=>difLR(U.map(u=>u[k]),z,grp));
+  const ord=res.map((d,k)=>[d.p2,k]).sort((a,b)=>a[0]-b[0]);const adj=new Array(K);let run=0;ord.forEach(([p_,k],j)=>{run=Math.max(run,Math.min(1,(K-j)*p_));adj[k]=run;});
+  const cls=d=>d<.035?'A (desprezível)':d<.07?'B (moderado)':'C (grande)';
+  let nFP=0;
+  let h='<table class="tbl"><thead><tr><th>Item</th><th>χ²(2)</th><th>p</th><th>p ajustado</th><th>ΔR² de Nagelkerke</th><th>Magnitude</th><th>Tipo (χ² de 1 gl)</th><th>Decisão</th></tr></thead><tbody>';
+  res.forEach((d,k)=>{const pu=corr?adj[k]:d.p2,sig=pu<.05;if(sig&&k!==st)nFP++;const tp=sig?(d.pU<.05&&d.pN<.05?'uniforme e não uniforme':d.pU<.05?'uniforme':d.pN<.05?'não uniforme':'conjunto'):'—';
+   const flag=sig&&d.dR2>=.035;const dec=flag?'<span class="no">sinalizar DIF</span>':sig?'<span class="wr">significativo, efeito pequeno</span>':'<span class="ok">sem evidência</span>';
+   h+=`<tr${k===st?' style="font-weight:600"':''}><td>${k+1}${k===st?' (DIF simulado)':''}</td><td>${fn(d.chi2,1)}</td><td>${fpv(d.p2).replace('= ','')}</td><td>${fpv(adj[k]).replace('= ','')}</td><td>${fn(d.dR2,3)}</td><td>${cls(d.dR2)}</td><td>${tp}</td><td>${dec}</td></tr>`;});
+  h+=`</tbody></table><p class="cap">Modelos aninhados: escore total → + grupo (DIF uniforme) → + grupo × escore (DIF não uniforme). A decisão exige significância ${corr?'(p ajustado por Holm) ':''}e efeito não desprezível (ΔR² ≥ 0,035, classes de Jodoin e Gierl, 2001). Com n grande, quase tudo é significativo, por isso o tamanho do efeito importa.</p>`;bT.innerHTML=h;
+  const c=chart(bL,{ar:.75,label:'Proporção de acertos do item 5 por escore total, em cada grupo'});
+  c.dom(0,K,0,1).axes([0,2,4,6,8,10],[0,.25,.5,.75,1],'Escore total (0 a 10)','Proporção de acertos',v=>fn(v,0),v=>fn(v,2));
+  [0,1].forEach(g=>{const pts=[];for(let s_=1;s_<K;s_++){let c1=0,c0=0;U.forEach((u,i)=>{if(grp[i]===g&&tot[i]===s_){c0++;c1+=u[st];}});if(c0>=15)pts.push([s_,c1/c0]);}
+   for(let i=1;i<pts.length;i++)c.seg(pts[i-1][0],pts[i-1][1],pts[i][0],pts[i][1],'ln '+(g?'s2':'s1'));pts.forEach(q=>c.dot(q[0],q[1],3.6,'dt '+(g?'f2':'f1')));});
+  c.legend([['f1','Referência','dot'],['f2','Focal','dot']],'tl');
+  const d5=res[st];
+  ctx.read(`Item 5: χ²(2) = <b>${fn(d5.chi2,1)}</b>, p ${fpv(d5.p2)} · ΔR² = <b>${fn(d5.dR2,3)}</b> (classe ${cls(d5.dR2)[0]}). Outros itens sinalizados (falsos positivos): <b>${nFP}</b> de 9${imp>0&&db===0&&da===0?'. Mesmo com impacto de '+fn(imp,1)+' DP, sem DIF o teste não deve sinalizar: grupos com habilidades diferentes não implicam DIF.':'.'}${da>0&&db===0&&n<800?' <span class="wr">O DIF não uniforme exige amostras maiores para ser detectado.</span>':''}`);
+  ctx.apa(`O funcionamento diferencial dos itens foi investigado por regressão logística (Swaminathan &amp; Rogers, 1990), com o escore total como variável de pareamento (<i>n</i> = ${n} por grupo). Para o item 5, o teste conjunto foi χ²(2) = ${fn(d5.chi2,1)}, <i>p</i> ${fpv(d5.p2)}, com ΔR² de Nagelkerke = ${ap(d5.dR2)} (classe ${cls(d5.dR2)[0]}, segundo Jodoin &amp; Gierl, 2001)${corr?'; os valores de p foram ajustados pelo método de Holm para 10 comparações':''}.`);
+ }
+ return{update};},
+exp:['Com Δb = 1,0, Δa = 0 e impacto = 0,5 (valores iniciais), apenas o item 5 deve ser sinalizado: o impacto sozinho não gera DIF.','Zere Δb e Δa, mantendo o impacto: nenhum item deve ser sinalizado de forma consistente. Isso separa impacto de DIF.','Aumente n para 2000 e Δb para 0,3: efeitos pequenos passam a ser significativos; confira o ΔR² antes de decidir.','Zere Δb e o impacto, ponha Δa = 0,8 e n = 800: sem a correção de Holm aparecem alguns falsos positivos entre os outros 9 itens; com a correção, eles somem.'],
+defs:`<dl class="defs"><dt>DIF (funcionamento diferencial do item)</dt><dd>Diferença na probabilidade de resposta entre grupos <b>com o mesmo nível do traço</b>. É uma condição necessária, mas não suficiente, para viés do item.</dd>
+<dt>Impacto</dt><dd>Diferença real de habilidade entre grupos. Não é DIF: a regressão logística condiciona no escore total e, por isso, tende a não sinalizá-lo.</dd>
+<dt>Regressão logística</dt><dd>Três modelos aninhados: (1) escore total; (2) + grupo = DIF uniforme (curvas paralelas, deslocadas); (3) + grupo × escore = DIF não uniforme (curvas que se cruzam ou têm inclinações diferentes). Teste conjunto com 2 gl; componentes com 1 gl.</dd>
+<dt>Tamanho do efeito</dt><dd>ΔR² de Nagelkerke entre o modelo 1 e o 3. Classes de Jodoin e Gierl (2001): A &lt; 0,035; B de 0,035 a 0,07; C &gt; 0,07. Significância sozinha engana com amostras grandes.</dd>
+<dt>Múltiplos testes</dt><dd>Testar todos os itens infla o erro tipo I. O ajuste de Holm controla a taxa de erro por família. Com 10 itens e α = 0,05, espera-se ao menos um falso positivo em cerca de 40% das análises sem ajuste.</dd>
+<dt>Cautelas</dt><dd>O escore total é contaminado se muitos itens têm DIF (purificação iterativa ajuda). DIF estatístico exige revisão qualitativa do item antes de excluí-lo. Em TRI, o equivalente é comparar parâmetros entre grupos (por exemplo, teste de razão de verossimilhança).</dd></dl>`,
+prac:'Numa prova de raciocínio aplicada a participantes de escolas públicas e privadas, a regressão logística sinaliza o item 12 com ΔR² = 0,09 (classe C). Antes de excluí-lo, a equipe analisa o conteúdo: o item usa um vocabulário mais familiar a um dos grupos? Só então decide por reformular, remover ou manter com justificativa.',
+quiz:[
+{q:'Dois grupos têm médias diferentes na escala, mas nenhum item tem DIF. Isso é:',o:['Impossível','Impacto: diferença real no traço, não viés dos itens','Viés de todos os itens','DIF não uniforme'],a:1,why:'DIF compara pessoas de mesmo nível do traço; diferença de médias entre grupos pode ser impacto.'},
+{q:'No modelo logístico, o termo grupo × escore significativo indica:',o:['DIF uniforme','DIF não uniforme: o efeito do grupo depende do nível do traço','Ausência de DIF','Falta de fidedignidade'],a:1,why:'A interação indica que a diferença entre grupos muda ao longo do traço.'},
+{q:'Com n muito grande, vários itens têm p < 0,001 e ΔR² < 0,01. Conduta mais adequada:',o:['Excluir todos os itens','Considerar os efeitos desprezíveis e priorizar os itens com efeito relevante','Aumentar ainda mais o n','Ignorar o teste'],a:1,why:'Com amostras grandes, efeitos triviais ficam significativos; o tamanho do efeito orienta a decisão.'},
+{q:'Por que corrigir os valores de p ao testar DIF em todos os itens?',o:['Para aumentar o poder','Porque testar muitos itens infla a chance de falsos positivos','Porque o DIF só vale para um item','Porque o escore total muda'],a:1,why:'Múltiplas comparações aumentam o erro tipo I; correções como a de Holm controlam esse risco.'},
+{q:'O que fazer após sinalizar DIF em um item?',o:['Excluir automaticamente','Revisar o conteúdo e o contexto do item antes de decidir','Trocar o grupo de referência','Reduzir o alfa'],a:1,why:'DIF estatístico não implica viés: a decisão exige análise qualitativa do item.'}]});
+
+MODS.push({id:'normas',u:3,title:'Normas e escores padronizados',
+lead:'Um escore bruto de 38 pontos não quer dizer nada sozinho. Para interpretá-lo, comparamos a pessoa com uma amostra normativa e convertemos o escore em z, T, QI, percentil ou estanino. Veja como todas essas escalas são a mesma informação.',
+pre:'Pré-requisitos: distribuição normal e escore z (Laboratório de Estatística, módulo da curva normal).',
+build(ctx){
+ const sm=slider(ctx.ctl,{label:'Média da amostra normativa',min:10,max:60,step:1,val:30,dec:0},()=>update());
+ const ss=slider(ctx.ctl,{label:'Desvio-padrão da norma',min:2,max:15,step:1,val:8,dec:0},()=>update());
+ const sx=slider(ctx.ctl,{label:'Escore bruto da pessoa',min:0,max:80,step:1,val:38,dec:0},()=>update());
+ const bA=el('div',{class:'cbox'},ctx.ch),bB=el('div',{class:'cbox'},ctx.ch);
+ function update(){
+  const M=sm.get(),S=ss.get(),x=sx.get(),z=(x-M)/S,T=50+10*z,QI=100+15*z,pd=10+3*z,es=clamp(Math.round(5+2*z),1,9),pc=normCdf(z)*100;
+  const zc=clamp(z,-3.9,3.9),g=[];for(let t=-4;t<=4.001;t+=.1)g.push([+t.toFixed(2),normPdf(t)]);
+  const c=chart(bA,{ar:.7,label:'Curva normal com a posição da pessoa'});c.dom(-4,4,0,.45).axes([-3,-2,-1,0,1,2,3],[],'Escore z',null);
+  c.area(g.filter(p=>p[0]<=zc).concat([[zc,normPdf(zc)]]),0,'ar f1');c.line(g,'ln s1');c.vline(zc,'ref');c.text(zc,.43,`${fn(pc,1)}% abaixo`,'lb',zc>1.5?'end':'start',zc>1.5?-5:5,0);
+  const rows=[['z',v=>v,[-3,-2,-1,0,1,2,3],v=>fn(v,0)],['T',v=>50+10*v,[-3,-2,-1,0,1,2,3],v=>fn(50+10*v,0)],['QI/composto',v=>100+15*v,[-3,-2,-1,0,1,2,3],v=>fn(100+15*v,0)],['Ponderado',v=>10+3*v,[-3,-2,-1,0,1,2,3],v=>fn(10+3*v,0)],['Estanino',v=>5+2*v,[-2,-1.5,-1,-.5,0,.5,1,1.5,2],v=>fn(5+2*v,0)],['Percentil',v=>0,[-2,-1,0,1,2],v=>fn(normCdf(v)*100,0)]];
+  const c2=chart(bB,{h:260,m:{l:86,r:14,t:10,b:10},label:'Equivalência entre escalas padronizadas'});c2.dom(-3.5,3.5,0,rows.length);
+  rows.forEach((r,i)=>{const y=rows.length-i-.5;c2.seg(-3.5,y,3.5,y,'grid');c2.text(-3.5,y,r[0],'lb','end',-8,4);r[2].forEach(v=>{c2.seg(v,y-.12,v,y+.12,'ref2');c2.text(v,y,r[3](v),'lb2','middle',0,-9);});c2.dot(zc,y,4.5,'dt f2');});
+  c2.vline(zc,'ref');
+  ctx.read(`Bruto <b>${x}</b> → z = <b>${fn(z)}</b> · T = <b>${fn(T,0)}</b> · QI/composto = <b>${fn(QI,0)}</b> · ponderado = <b>${fn(pd,0)}</b> · estanino = <b>${es}</b> · percentil ≈ <b>${fn(pc,0)}</b>. Os percentis só valem se a distribuição normativa for aproximadamente normal.`);
+  ctx.apa(`O escore bruto de ${x} pontos, comparado à amostra normativa (<i>M</i> = ${M}; <i>DP</i> = ${S}), corresponde a <i>z</i> = ${fn(z)}, escore T = ${fn(T,0)} e percentil ${fn(pc,0)}${es?` (estanino ${es})`:''}.`);
+ }
+ return{update};},
+exp:['Mude a média da norma de 30 para 40 mantendo o bruto em 38: o mesmo bruto passa a ser um escore bem abaixo da média.','Coloque o bruto em um desvio-padrão acima da média: z = 1, T = 60, QI = 115 e percentil ≈ 84.','Reduza o DP da norma: o mesmo afastamento do bruto passa a valer mais pontos de z.'],
+defs:`<dl class="defs"><dt>Escore z</dt><dd><span class="fx">z = (X − M) / DP</span>: distância da média em desvios-padrão.</dd>
+<dt>Escalas derivadas</dt><dd>T = 50 + 10z · QI/escore composto = 100 + 15z · ponderado = 10 + 3z · estanino ≈ 5 + 2z (de 1 a 9).</dd>
+<dt>Percentil</dt><dd>Percentual da amostra normativa com escore menor ou igual. Na curva normal, é Φ(z).</dd>
+<dt>Amostra normativa</dt><dd>Precisa ser representativa da população-alvo (idade, sexo, escolaridade, região), com tamanho suficiente por estrato. Normas de outro país ou de outra época podem não valer.</dd>
+<dt>Quando a distribuição não é normal</dt><dd>Use percentis empíricos ou normas contínuas (modelos de regressão com assimetria e curtose), em vez de converter por z.</dd></dl>`,
+prac:'Um neuropsicólogo compara o desempenho de um paciente em um teste de memória com normas por idade e escolaridade. O mesmo escore bruto pode ser normal para um idoso com pouca escolaridade e deficitário para um adulto jovem universitário; a escolha da tabela normativa muda o laudo.',
+quiz:[
+{q:'Uma pessoa tem z = −1. Quais são seu escore T e seu escore de QI/composto?',o:['T = 40; QI = 85','T = 60; QI = 115','T = 40; QI = 70','T = 35; QI = 85'],a:0,why:'T = 50 + 10(−1) = 40; QI = 100 + 15(−1) = 85.'},
+{q:'A que z corresponde, aproximadamente, o percentil 84?',o:['0','+1','+2','−1'],a:1,why:'Na curva normal, cerca de 84% dos casos ficam abaixo de z = +1.'},
+{q:'Por que a amostra normativa importa?',o:['Ela define a escala de pontuação do teste','O escore padronizado só é interpretável em relação à população de referência','Ela aumenta o alfa','Ela elimina o erro de medida'],a:1,why:'Se a norma não representa a população da pessoa avaliada, z, T e percentil podem enganar.'}]});
+
+/* 11 — ROC e ponto de corte */
+MODS.push({id:'roc',u:3,title:'Curva ROC e ponto de corte',
+lead:'Para usar um escore como triagem ou apoio diagnóstico, é preciso decidir um ponto de corte. Cada corte troca sensibilidade por especificidade, e o valor preditivo ainda depende da prevalência. Veja tudo junto.',
+pre:'Pré-requisitos: distribuição normal e proporções. Aqui, o escore dos casos e dos não casos segue distribuições normais com o mesmo desvio-padrão (5 pontos); os não casos têm média 10.',
+build(ctx){
+ const mu0=10,sg=5;
+ const sd_=slider(ctx.ctl,{label:'Separação entre grupos (d, em desvios-padrão)',min:0,max:3,step:.1,val:1.5,dec:1},()=>update());
+ const sp=slider(ctx.ctl,{label:'Prevalência do transtorno (%)',min:1,max:50,step:1,val:15,dec:0},()=>update());
+ const sc=slider(ctx.ctl,{label:'Ponto de corte (escore)',min:0,max:35,step:.5,val:15,dec:1},()=>update());
+ const wt=check(ctx.ctl,'Ponderar as curvas pela prevalência',false,()=>update());
+ btn(ctx.btns,'Corte de Youden',()=>{sc.set(clamp(Math.round((mu0+sd_.get()*sg/2)*2)/2,0,35));update();});
+ btn(ctx.btns,'Sensibilidade ≈ 90%',()=>{sc.set(clamp(Math.round((mu0+sd_.get()*sg-1.2816*sg)*2)/2,0,35));update();});
+ const bD=el('div',{class:'cbox'},ctx.ch),bR=el('div',{class:'cbox'},ctx.ch),bT=el('div',{class:'cbox scroll',style:'grid-column:1/-1'},ctx.ch);
+ function update(){
+  const d=sd_.get(),pi=sp.get()/100,cut=sc.get(),mu1=mu0+d*sg,w=wt.get();
+  const se=1-normCdf((cut-mu1)/sg),spc=normCdf((cut-mu0)/sg),auc=normCdf(d/Math.SQRT2),J=se+spc-1;
+  const ppv=se*pi/(se*pi+(1-spc)*(1-pi)),npv=spc*(1-pi)/(spc*(1-pi)+(1-se)*pi),lr=se/Math.max(1-spc,1e-9);
+  const xs=[];for(let x=-5;x<=35.01;x+=.5)xs.push(+x.toFixed(1));
+  const f0=xs.map(x=>[x,normPdf((x-mu0)/sg)/sg*(w?1-pi:1)]),f1=xs.map(x=>[x,normPdf((x-mu1)/sg)/sg*(w?pi:1)]);
+  const ym=Math.max(...f0.map(p=>p[1]),...f1.map(p=>p[1]))*1.1;
+  const c=chart(bD,{ar:.7,label:'Distribuição dos escores em casos e não casos'});c.dom(-5,35,0,ym).axes([0,10,20,30],[],'Escore total',null);
+  c.area(f0,0,'ar f1');c.line(f0,'ln s1');c.area(f1,0,'ar f2');c.line(f1,'ln s2');c.vline(cut,'ref');
+  c.legend([['s1','Sem o transtorno'],['s2','Com o transtorno']],'tr');
+  const roc=[];for(let x=45;x>=-15;x-=.5)roc.push([1-normCdf((x-mu0)/sg),1-normCdf((x-mu1)/sg)]);
+  const c2=chart(bR,{ar:.9,label:'Curva ROC'});c2.dom(0,1,0,1).axes([0,.2,.4,.6,.8,1],[0,.2,.4,.6,.8,1],'1 − especificidade','Sensibilidade',v=>fn(v,1),v=>fn(v,1));c2.seg(0,0,1,1,'ref');c2.line(roc,'ln s1 thick');c2.dot(1-spc,se,6,'dt f2');
+  c2.text(1,.05,`AUC = ${fn(auc)}`,'lb','end',-4,0);
+  const TP=1000*pi*se,FN=1000*pi*(1-se),FP=1000*(1-pi)*(1-spc),TN=1000*(1-pi)*spc;
+  bT.innerHTML=`<table class="tbl"><thead><tr><th>Entre 1.000 pessoas</th><th>Com o transtorno</th><th>Sem o transtorno</th><th>Total</th></tr></thead><tbody><tr><td>Teste positivo (escore ≥ ${fn(cut,1)})</td><td>${fn(TP,0)} (VP)</td><td>${fn(FP,0)} (FP)</td><td>${fn(TP+FP,0)}</td></tr><tr><td>Teste negativo</td><td>${fn(FN,0)} (FN)</td><td>${fn(TN,0)} (VN)</td><td>${fn(FN+TN,0)}</td></tr></tbody></table>`;
+  ctx.read(`Sensibilidade = <b>${pct(se)}</b> · especificidade = <b>${pct(spc)}</b> · VPP = <b>${pct(ppv)}</b> · VPN = <b>${pct(npv)}</b> · razão de verossimilhança positiva = <b>${fn(lr,1)}</b> · J de Youden = <b>${fn(J)}</b> · AUC = <b>${fn(auc)}</b>.${pi<.06&&ppv<.5?' <span class="wr">Com prevalência baixa, a maioria dos positivos são falsos positivos (VPP baixo), mesmo com boa sensibilidade e especificidade.</span>':''}`);
+  ctx.apa(`A área sob a curva ROC foi AUC = ${ap(auc)}. Com ponto de corte ≥ ${fn(cut,1)}, a sensibilidade foi ${ap(se)} e a especificidade, ${ap(spc)} (J de Youden = ${ap(J)}). Considerando prevalência de ${fn(pi*100,0)}%, o valor preditivo positivo foi ${ap(ppv)} e o negativo, ${ap(npv)}. Recomenda-se informar intervalos de confiança e validar o ponto de corte em amostra independente.`);
+ }
+ return{update};},
+exp:['Reduza a prevalência para 2%: a sensibilidade e a especificidade não mudam, mas o VPP despenca.','Compare o corte de Youden com o de sensibilidade ≈ 90%: ganha-se sensibilidade e perde-se especificidade.','Coloque d = 0: a ROC cai sobre a diagonal e AUC = 0,50 (nenhuma discriminação).','Marque “ponderar pela prevalência” para ver quantos casos e não casos existem de fato em cada faixa de escore.'],
+defs:`<dl class="defs"><dt>Sensibilidade e especificidade</dt><dd>Sensibilidade = VP/(VP+FN): proporção de casos detectados. Especificidade = VN/(VN+FP): proporção de não casos identificados. Não dependem da prevalência.</dd>
+<dt>VPP e VPN</dt><dd>VPP = VP/(VP+FP); VPN = VN/(VN+FN). <b>Dependem da prevalência.</b></dd>
+<dt>Curva ROC e AUC</dt><dd>Sensibilidade × (1 − especificidade) para todos os cortes. AUC = 0,50 não discrimina; 1,00 discrimina perfeitamente. Regra prática: 0,70–0,80 aceitável; 0,80–0,90 excelente.</dd>
+<dt>Corte de Youden</dt><dd><span class="fx">J = sensibilidade + especificidade − 1</span>. O corte que maximiza J equilibra os dois erros, mas nem sempre é o mais adequado: em rastreio, prioriza-se a sensibilidade.</dd>
+<dt>Cuidado</dt><dd>Escolher o corte e avaliá-lo na mesma amostra superestima o desempenho. Valide em amostra independente.</dd></dl>`,
+prac:'Um instrumento de rastreio de depressão aplicado na atenção primária (prevalência alta) tem VPP bem maior que o mesmo instrumento aplicado na população geral (prevalência baixa), com os mesmos cortes. Ao relatar o desempenho, informe sempre a prevalência do cenário de uso.',
+quiz:[
+{q:'Sensibilidade e especificidade não dependem da prevalência, mas VPP e VPN dependem. Verdadeiro ou falso?',o:['Verdadeiro','Falso','Só o VPN depende','Só em amostras grandes'],a:0,why:'Sensibilidade e especificidade são propriedades do teste; os valores preditivos combinam o teste com a prevalência.'},
+{q:'AUC = 0,50 significa:',o:['Discriminação perfeita','Nenhuma discriminação além do acaso','Sensibilidade de 50%','VPP de 50%'],a:1,why:'Uma ROC sobre a diagonal indica que o escore não separa casos e não casos.'},
+{q:'Em um rastreio no qual não perder casos é a prioridade, o corte deve priorizar:',o:['Especificidade','Sensibilidade','VPP','Acurácia global'],a:1,why:'Em rastreio, aceitam-se mais falsos positivos (confirmados depois) para não deixar casos escaparem.'}]});
+
+/* 12 — Qual evidência falta? */
+const GOALS=[
+{k:'conteudo',t:'Os itens representam bem o construto?',ev:'Validade de conteúdo',how:'Painel de especialistas (de preferência 6 ou mais) avalia relevância e clareza; calcule I-CVI, S-CVI/Ave e κ*. Faça também pré-teste com o público-alvo.',idx:'I-CVI = 1,00 (3–5 juízes) ou ≥ 0,78 (6+); S-CVI/Ave ≥ 0,90; κ* ≥ 0,74.',pit:'Não descrever como os juízes foram escolhidos; julgar só relevância e ignorar a clareza dos itens.',mod:'conteudo'},
+{k:'estrutura',t:'Quantas dimensões a escala mede?',ev:'Estrutura interna',how:'AFE em uma amostra e AFC em outra independente. Para itens ordinais, use correlações policóricas (e estimador WLSMV/DWLS na AFC) e análise paralela para decidir o número de fatores. Se houver fator geral e subescalas, compare com o modelo bifatorial e calcule o ômega hierárquico (módulo 12).',idx:'KMO, Bartlett, análise paralela; CFI/TLI ≥ 0,95, RMSEA ≤ 0,06, SRMR ≤ 0,08 (referências).',pit:'Usar só o critério de Kaiser; fazer AFE e AFC na mesma amostra; ignorar resíduos.',mod:'afe'},
+{k:'consistencia',t:'O escore é consistente entre os itens?',ev:'Consistência interna',how:'Calcule α e ω (com intervalos de confiança) depois de confirmar a dimensionalidade, por subescala quando houver.',idx:'≥ 0,70 em pesquisa; ≥ 0,90 em decisões individuais.',pit:'Tomar o α alto como prova de unidimensionalidade ou de validade; não verificar redundância de itens.',mod:'consistencia'},
+{k:'estabilidade',t:'O escore é estável no tempo?',ev:'Estabilidade temporal e mudança confiável',how:'Teste-reteste com intervalo adequado ao construto (por exemplo, 2 a 4 semanas); CCI com acordo absoluto, EPM e diferença mínima detectável.',idx:'CCI: 0,75–0,90 bom; &gt; 0,90 excelente (Koo e Li, 2016).',pit:'Usar só r de Pearson; intervalo curto demais (efeito de memória) ou longo demais (mudança real).',mod:'estabilidade'},
+{k:'relacoes',t:'O escore se relaciona como a teoria prevê?',ev:'Validade convergente e discriminante',how:'Defina antes as direções e magnitudes esperadas das correlações com medidas do mesmo construto e de construtos distintos; considere a atenuação.',idx:'Convergente: correlação moderada a alta na direção prevista; discriminante: menor que a convergente.',pit:'Escolher medidas de comparação pouco fidedignas; formular hipóteses depois de ver os dados.',mod:'convergente'},
+{k:'criterio',t:'O escore identifica casos clínicos?',ev:'Validade de critério e acurácia diagnóstica',how:'Compare o escore com um padrão de referência (por exemplo, entrevista diagnóstica estruturada). Use curva ROC, sensibilidade, especificidade, VPP e VPN no cenário real de prevalência.',idx:'AUC com IC95%; sensibilidade e especificidade no corte escolhido.',pit:'Ignorar a prevalência; escolher e avaliar o corte na mesma amostra.',mod:'roc'},
+{k:'grupos',t:'A escala funciona do mesmo jeito em grupos diferentes?',ev:'Equivalência entre grupos',how:'Invariância de medida por AFC multigrupo (configural, métrica, escalar) ou DIF por TRI ou regressão logística.',idx:'ΔCFI ≤ 0,01 (Cheung e Rensvold, 2002); ΔRMSEA ≤ 0,015 (Chen, 2007); no DIF, significância com ΔR² ≥ 0,035 (módulo 14).',pit:'Comparar médias entre grupos sem testar invariância.',mod:'invariancia'},
+{k:'normas',t:'Como interpretar um escore individual?',ev:'Normas e escores padronizados',how:'Amostra normativa representativa e de tamanho suficiente por estrato; tabelas por idade, sexo e escolaridade quando relevantes; converta em z, T e percentis.',idx:'Representatividade da amostra e tamanho por estrato.',pit:'Usar normas de outro país ou época sem checagem; usar amostra de conveniência.',mod:'normas'}];
+MODS.push({id:'evidencia',u:4,title:'Qual evidência de validade falta?',noApa:true,
+lead:'Validade não é uma propriedade do teste, mas das interpretações que fazemos dos escores, apoiadas em diferentes fontes de evidência. Escolha a pergunta que você quer responder e veja que evidência reunir, com quais critérios e quais erros evitar.',
+pre:'Referência conceitual: Standards for Educational and Psychological Testing (AERA, APA e NCME, 2014), com fontes de evidência baseadas em conteúdo, estrutura interna, relações com outras variáveis, consequências e processos de resposta.',
+build(ctx){
+ const rd=radios(ctx.ctl,'Pergunta que você quer responder',GOALS.map(g=>[g.k,g.t]),'conteudo',()=>update());
+ const box=el('div',{class:'cbox',style:'grid-column:1/-1'},ctx.ch);
+ function update(){const g=GOALS.find(x=>x.k===rd.get());
+  box.innerHTML=`<div class="tile"><b>${g.ev}</b><p><b>O que fazer.</b> ${g.how}</p><p><b>Indicadores e referências.</b> ${g.idx}</p><p><b>Erros comuns.</b> ${g.pit}</p><p><button type="button" class="btn" data-go="${g.mod}">Ir ao módulo correspondente</button></p></div>`;
+  box.querySelector('[data-go]').addEventListener('click',e=>go(e.target.getAttribute('data-go')));
+  ctx.read('Nenhuma evidência isolada basta: a argumentação de validade combina várias fontes, escolhidas conforme o uso pretendido do escore.');}
+ return{update};},
+exp:['Escolha “O escore identifica casos clínicos?” e depois “Como interpretar um escore individual?”: perceba como mudam os dados necessários.','Para uma escala traduzida ou usada em grupos distintos, percorra todas as perguntas e liste quais evidências precisam ser refeitas na nova população.'],
+defs:`<dl class="defs"><dt>Validade como argumento</dt><dd>Segundo Messick (1995) e os Standards (2014), validade é o grau em que evidências e teoria apoiam as interpretações dos escores para o uso proposto. Não se “valida o teste”: valida-se uma interpretação, para um uso e uma população.</dd>
+<dt>Fidedignidade como pré-condição</dt><dd>Sem fidedignidade, as correlações (validade convergente, de critério) ficam atenuadas. As duas coisas se examinam juntas.</dd>
+<dt>Replicação</dt><dd>Em novas populações, línguas ou épocas, parte das evidências precisa ser refeita.</dd></dl>`,
+prac:'Num relatório de validação, organize a seção de resultados por fonte de evidência, e não por técnica estatística. Cada bloco responde a uma pergunta (“os itens cobrem o construto?”, “quantas dimensões há?”, “o escore prevê o que deveria?”).',
+quiz:[
+{q:'Qual afirmação descreve melhor a visão atual de validade?',o:['É uma propriedade fixa do teste','É o grau em que as evidências apoiam a interpretação dos escores para um uso específico','É sinônimo de fidedignidade alta','É estabelecida apenas por análise fatorial'],a:1,why:'Validade se refere às interpretações e aos usos dos escores, apoiada por várias fontes de evidência.'},
+{q:'Uma escala válida na população de adultos universitários pode ser usada, sem nova análise, em idosos?',o:['Sim, validade é do teste','Não: é preciso reunir evidências na nova população','Sim, se o alfa for alto','Sim, se for traduzida'],a:1,why:'As evidências são específicas para a população e o uso; mudanças de grupo exigem nova checagem (por exemplo, invariância, normas).'}]});
+
+/* 13 — Desafio do psicometrista */
+MODS.push({id:'desafio',u:4,title:'Desafio do psicometrista',noSim:true,quizTitle:'Casos para decidir',
+lead:'Dez situações de pesquisa e de prática. Em cada uma, escolha a interpretação ou a conduta mais adequada. Ao final, você vê sua pontuação.',
+quiz:[
+{q:'Caso 1. Uma escala de ansiedade de 20 itens tem α = 0,96. A autora conclui: “portanto, a escala é válida e unidimensional”. Qual o principal problema?',o:['Nenhum: α acima de 0,90 garante isso','O α alto não prova validade nem unidimensionalidade, e valores muito altos podem indicar itens redundantes','O α não pode passar de 0,90','Deveria ter usado teste-reteste'],a:1,why:'O α cresce com o número de itens e não verifica dimensionalidade nem validade. Convém checar a estrutura (AFE/AFC) e a redundância dos itens.'},
+{q:'Caso 2. Em uma AFE (n = 300, 12 itens), o critério de Kaiser sugere 3 fatores; a análise paralela e o scree plot sugerem 2; o terceiro fator tem só um item com carga relevante. Qual a melhor decisão?',o:['Manter 3 fatores, pois o Kaiser é o critério oficial','Adotar 2 fatores e confirmar a estrutura por AFC em outra amostra','Adotar 1 fator por parcimônia','Descartar o fator com maior variância'],a:1,why:'A análise paralela e o scree concordam, e o terceiro fator não é interpretável. A confirmação deve ser feita numa amostra independente.'},
+{q:'Caso 3. Em uma AFC, CFI = 0,97, SRMR = 0,04 e RMSEA = 0,09 (gl = 8). Como proceder?',o:['Rejeitar o modelo, pois o RMSEA passa de 0,06','Aceitar sem comentar','Reconhecer evidência mista (o RMSEA tende a ser alto com poucos gl), inspecionar resíduos e relatar com ressalvas','Remover itens até o RMSEA ficar abaixo de 0,06'],a:2,why:'Os índices divergem. Com poucos graus de liberdade o RMSEA fica instável; olhe os resíduos e relate com transparência, sem “caçar” índices.'},
+{q:'Caso 4. Um teste-reteste com intervalo de 1 dia deu r = 0,90, e a pesquisadora conclui que o instrumento é estável no tempo. Qual a principal ressalva?',o:['O r de Pearson nunca pode ser usado','O intervalo é curto (memória e prática), e falta avaliar o acordo absoluto (CCI) e a diferença média','0,90 é um valor baixo','Deveria ter calculado o alfa'],a:1,why:'Um intervalo muito curto favorece a lembrança das respostas; a correlação sozinha ignora diferenças sistemáticas entre as aplicações.'},
+{q:'Caso 5. Um instrumento de triagem tem AUC = 0,70, sensibilidade de 85% e especificidade de 60%. Aplicado na população geral, onde a prevalência é de 2%, o que esperar?',o:['VPP alto, pois a sensibilidade é alta','Muitos falsos positivos: o VPP fica em torno de 4%','VPP igual à sensibilidade','A prevalência não interfere nos resultados'],a:1,why:'VPP = (0,85·0,02) / (0,85·0,02 + 0,40·0,98) ≈ 0,042. Com prevalência baixa, a maioria dos positivos é falso.'},
+{q:'Caso 6. Num item de matemática, a TRI mostra b maior para meninas do que para meninos com o mesmo θ (DIF uniforme). O que isso significa?',o:['Meninas têm menos habilidade em matemática','Com o mesmo nível do traço, meninas têm menor chance de acertar; o item pode ser enviesado e deve ter o conteúdo analisado antes de ser excluído','O item discrimina muito bem','É sempre erro amostral'],a:1,why:'O DIF compara grupos com o mesmo nível do traço. Revise o conteúdo (linguagem, contexto) antes de decidir por exclusão.'},
+{q:'Caso 7. Uma nova escala de resiliência correlaciona r = 0,38 com uma escala consolidada do mesmo construto. As fidedignidades são 0,60 e 0,65. A equipe conclui “baixa validade convergente”. Qual a ressalva?',o:['A correlação deveria ser negativa','A atenuação: corrigida pela fidedignidade, a correlação é de cerca de 0,61; o problema pode estar na fidedignidade','O tamanho da amostra não importa','As escalas não podem ser comparadas'],a:1,why:'r corrigida = 0,38 / √(0,60 × 0,65) ≈ 0,61. Fidedignidades baixas limitam a correlação observável.'},
+{q:'Caso 8. Numa escala de depressão, a AFC multigrupo (homens × mulheres) mostra invariância métrica, mas a escalar cai (ΔCFI = −0,025). Mesmo assim, os autores comparam as médias dos escores. Qual a crítica?',o:['Nenhuma: a invariância métrica basta para comparar médias','Sem invariância escalar, a diferença de médias pode refletir viés de itens e não diferença no construto; convém localizar os itens e avaliar a invariância parcial','A comparação exige invariância estrita','O ΔCFI deveria ser positivo'],a:1,why:'Médias só são comparáveis com cargas e interceptos equivalentes. Localize os itens problemáticos e, se justificável, use invariância parcial.'},
+{q:'Caso 9. Uma AFE de 10 itens dicotômicos (sim/não) foi feita com correlações de Pearson (phi) e produziu 3 fatores sem sentido teórico, separados pela “dificuldade” dos itens. Qual a melhor conduta?',o:['Aceitar os 3 fatores, pois é o que os dados mostram','Refazer a análise sobre a matriz tetracórica (policórica), inclusive a análise paralela, e reavaliar o número de fatores','Excluir os itens mais fáceis','Trocar a rotação para varimax'],a:1,why:'Correlações de Pearson entre itens dicotômicos com dificuldades diferentes geram fatores artificiais de dificuldade. A matriz tetracórica corrige esse efeito.'},
+{q:'Caso 10. Numa AFC com itens Likert de 4 categorias, muito concentrados nas categorias baixas, o autor usou ML sobre a matriz de Pearson e obteve cargas baixas e um χ² elevado. Qual a melhor conduta?',o:['Concluir que a escala é inválida','Reestimar com um estimador para dados ordinais (WLSMV/DWLS sobre a matriz policórica) e relatar os índices de ajuste robustos','Aumentar a amostra até o χ² cair','Remover os itens com cargas baixas'],a:1,why:'Com poucas categorias e respostas assimétricas, o ML sobre Pearson subestima cargas e infla o χ². O estimador para dados ordinais evita esse viés.'}],
+quizSummary:(s,n)=>`<b>Pontuação: ${s} de ${n}.</b> ${s>=n-1?'Excelente: você integrou bem as evidências de fidedignidade e validade.':s>=Math.ceil(n*.6)?'Bom caminho. Reveja os módulos dos casos que errou.':'Vale revisitar os módulos e tentar de novo; os casos exigem integrar evidências.'}`});
+/* ===== APLICATIVO ===== */
+const main=$('#main'),navEl=$('#nav');let cur=null;
+const doneMod=m=>m.quiz&&m.quiz.every((_,i)=>P.q[m.id+'.'+i]===1);
+function refreshNav(){
+ navEl.innerHTML='';let lastU=-1;const id=cur?cur.id:'inicio';
+ const mk=(mid,label,num)=>{const b=el('button',{type:'button',class:'nb','data-id':mid},navEl);if(mid===id)b.setAttribute('aria-current','page');const m=MODS.find(x=>x.id===mid);const st=m&&doneMod(m)?'d':(P.v[mid]?'v':'');el('span',{class:'n '+st},b,m&&doneMod(m)?'✓':String(num));el('span',{},b,label);b.addEventListener('click',()=>{go(mid);closeNav();});};
+ const h=el('button',{type:'button',class:'nb','data-id':'inicio'},navEl);if(id==='inicio')h.setAttribute('aria-current','page');el('span',{class:'n'},h,'⌂');el('span',{},h,'Início');h.addEventListener('click',()=>{go('inicio');closeNav();});
+ MODS.forEach((m,i)=>{if(m.u!==lastU){el('div',{class:'nu'},navEl,'Unidade '+(m.u+1)+' · '+UNITS[m.u]);lastU=m.u;}mk(m.id,m.title,i+1);});
+ $('#prog').textContent=MODS.filter(doneMod).length+' de '+MODS.length+' concluídos';
+}
+function closeNav(){navEl.classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false');}
+$('#menuBtn').addEventListener('click',()=>{const o=navEl.classList.toggle('open');$('#menuBtn').setAttribute('aria-expanded',String(o));});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNav();});
+function go(id){const h=id==='inicio'?'':id;if(location.hash.slice(1)===h)route();else location.hash=h;}
+function renderHome(){
+ cur={id:'inicio',inst:null};main.innerHTML='';
+ el('div',{class:'kicker'},main,'Ferramenta didática');
+ el('h2',{},main,'Laboratório Interativo de Psicometria');
+ el('p',{class:'lead'},main,'Aprenda, mexendo, como se constrói e se valida uma escala ou teste psicológico. Cada módulo traz um simulador com dados fictícios, conceitos e fórmulas, um texto-modelo de relato em estilo APA e um quiz.');
+ el('p',{class:'pre'},main,'Pré-requisito sugerido: o <a href="/estatistica/">Laboratório Interativo de Estatística</a> (correlação, regressão, curva normal).');
+ const card=el('section',{class:'card'},main);el('h3',{},card,'Mapa do percurso');const tiles=el('div',{class:'tiles'},card);
+ UNITS.forEach((u,ui)=>{const t=el('div',{class:'tile'},tiles);el('b',{},t,'Unidade '+(ui+1)+' · '+u);MODS.forEach((m,i)=>{if(m.u!==ui)return;const a=el('button',{type:'button',class:'nb',style:'padding:5px 4px'},t);el('span',{class:'n'+(doneMod(m)?' d':P.v[m.id]?' v':'')},a,doneMod(m)?'✓':String(i+1));el('span',{},a,m.title);a.addEventListener('click',()=>go(m.id));});});
+ const how=el('section',{class:'card'},main);el('h3',{},how,'Como usar');
+ el('ul',{},how,'<li>Mexa nos controles do simulador e leia o quadro “Leitura” abaixo dos gráficos.</li><li>Siga os itens de “Experimente” para ver cada conceito acontecer.</li><li>O texto de “Como relatar (APA)” é gerado com os valores do simulador no momento.</li><li>Use as setas ← e → do teclado (fora dos controles) ou os botões para navegar entre módulos.</li>');
+ el('p',{class:'cap'},how,'Os dados são sempre simulados, com sementes fixas, e os critérios citados (por exemplo, α ≥ 0,70 ou CFI ≥ 0,95) são referências usuais, não regras absolutas. Decisões reais combinam teoria, contexto e várias fontes de evidência.');
+ const au=el('section',{class:'card'},main);el('h3',{},au,'Autoria');el('p',{class:'cap'},au,'Prof. Dr. Tauily Claussen D\'Escragnolle Taunay · Psicólogo; mestre e doutor em Ciências Médicas (UFC); especialista em Neuropsicologia; professor de Psicologia na Universidade de Fortaleza (Unifor); coordenador da pós-graduação em Neurociências Comportamentais e Cognitivas. Como citar: Taunay, T. C. D. (2026). <i>Laboratório Interativo de Psicometria</i> [Ferramenta didática interativa].');
+ const b=el('div',{class:'btns'},main);btn(b,'Começar pelo módulo 1',()=>go(MODS[0].id),'pri');
+ const done=MODS.filter(doneMod).length;
+ const rb=btn(b,'Reiniciar progresso',()=>{if(!rb.dataset.arm){rb.dataset.arm='1';rb.textContent='Clique de novo para confirmar';setTimeout(()=>{delete rb.dataset.arm;rb.textContent='Reiniciar progresso';},4000);return;}P.v={};P.q={};saveP();renderHome();});
+ if(!done&&!Object.keys(P.q).length)rb.style.display='none';
+ refreshNav();
+}
+function renderMod(idx){
+ const m=MODS[idx];cur={id:m.id,inst:null};P.v[m.id]=1;saveP();main.innerHTML='';
+ const art=el('article',{class:'mod'},main);
+ el('div',{class:'kicker'},art,`Unidade ${m.u+1} · ${UNITS[m.u]} · Módulo ${idx+1} de ${MODS.length}`);
+ el('h2',{},art,m.title);el('p',{class:'lead'},art,m.lead);if(m.pre)el('p',{class:'pre'},art,m.pre);
+ let apaP=null;
+ if(!m.noSim){
+  const sec=el('section',{class:'card','aria-label':'Simulador'},art);el('h3',{},sec,'Simulador');
+  const ctl=el('div',{class:'controls'},sec),btns=el('div',{class:'btns'},sec),ch=el('div',{class:'charts'},sec),rd=el('div',{class:'read','aria-live':'polite'},sec);
+  const ctx={ctl,btns,ch,read:h=>{rd.innerHTML=h;},apa:h=>{if(apaP)apaP.innerHTML=h;}};
+  if(m.exp){const e=el('section',{},art);el('h3',{},e,'Experimente');el('ul',{class:'exp'},e,m.exp.map(x=>'<li>'+x+'</li>').join(''));}
+  if(m.defs){const d=el('section',{class:'card'},art);el('h3',{},d,'Conceitos e fórmulas');d.insertAdjacentHTML('beforeend',m.defs);}
+  if(m.prac){const d=el('section',{},art);el('h3',{},d,'Na prática psicológica');el('p',{},d,m.prac);}
+  if(!m.noApa){const a=el('section',{class:'card'},art);el('h3',{},a,'Como relatar (APA)');apaP=el('p',{class:'apa'},a);const bb=el('div',{class:'btns'},a);const cp=btn(bb,'Copiar texto',()=>{const txt=apaP.textContent;const ok=()=>{cp.textContent='Copiado ✓';setTimeout(()=>cp.textContent='Copiar texto',1800);};const fb=()=>{cp.textContent='Selecione o texto e copie';try{const r=document.createRange();r.selectNodeContents(apaP);const s=getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}};try{navigator.clipboard.writeText(txt).then(ok,fb);}catch(e){fb();}});el('p',{class:'cap'},a,'Texto-modelo com os valores atuais do simulador. Adapte à sua amostra real e confira as normas da edição vigente da APA.');}
+  cur.inst=m.build(ctx);requestAnimationFrame(()=>cur.inst.update());
+ }else{
+  if(m.defs){const d=el('section',{class:'card'},art);el('h3',{},d,'Conceitos e fórmulas');d.insertAdjacentHTML('beforeend',m.defs);}
+ }
+ if(m.quiz)quiz(art,m.id,m.quiz,{title:m.quizTitle,summary:m.quizSummary});
+ const pg=el('div',{class:'pager'},art);const prev=idx>0?MODS[idx-1]:null,next=idx<MODS.length-1?MODS[idx+1]:null;
+ const pb=btn(pg,prev?'← '+prev.title:'← Início',()=>go(prev?prev.id:'inicio'));if(next)btn(pg,next.title+' →',()=>go(next.id),'pri');else btn(pg,'Voltar ao início',()=>go('inicio'),'pri');
+ refreshNav();
+}
+function route(){const id=location.hash.slice(1);const i=MODS.findIndex(m=>m.id===id);if(i>=0)renderMod(i);else renderHome();window.scrollTo(0,0);try{main.focus({preventScroll:true});}catch(e){}}
+window.addEventListener('hashchange',route);
+let _rt;window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>{if(cur&&cur.inst&&cur.inst.update)cur.inst.update();},150);});
+document.addEventListener('keydown',e=>{if(e.target!==document.body&&e.target!==main)return;if(e.altKey||e.ctrlKey||e.metaKey)return;const ids=['inicio'].concat(MODS.map(m=>m.id));const i=ids.indexOf(cur?cur.id:'inicio');if(e.key==='ArrowRight'&&i<ids.length-1)go(ids[i+1]);if(e.key==='ArrowLeft'&&i>0)go(ids[i-1]);});
+route();
+
+</script>
+</body>
+</html>

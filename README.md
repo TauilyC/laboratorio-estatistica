@@ -1,14 +1,20 @@
-# Laboratório Interativo de Estatística
+# Estatística Aplicada à Psicologia: Laboratórios Interativos
 
-Site estático (um único `index.html`) servido por nginx na porta 80.
+Site estático servido por nginx (porta 3000).
+
+| Rota | Conteúdo |
+|---|---|
+| `/` | Página inicial com os dois laboratórios |
+| `/estatistica/` | Laboratório Interativo de Estatística |
+| `/psicometria/` | Laboratório Interativo de Psicometria |
+
+Cada laboratório é um único `index.html` autocontido, em sua pasta. Para atualizar um deles, substitua o arquivo e envie para a `main`; a Guara Cloud republica sozinha (auto deploy).
 
 ## Deploy na Guara Cloud
-- Novo serviço → repositório `TauilyC/laboratorio-estatistica`, branch `main`
-- **Root directory:** `/`
-- Build: Dockerfile (`Dockerfile`), porta `3000`, auto deploy ligado
+Repositório `TauilyC/laboratorio-estatistica`, branch `main`, root `/`, build Dockerfile, porta `3000`.
 
 ## Testar localmente
 ```bash
-docker build -t lab-estatistica .
-docker run --rm -p 8080:3000 lab-estatistica
+docker build -t labs .
+docker run --rm -p 8080:3000 labs
 ```
